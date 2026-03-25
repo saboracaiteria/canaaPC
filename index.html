@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- FIX IPHONE: Tags para permitir modo Ecrã Inteiro Nativo no iOS (Add to Home Screen) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <title>Canaan: Combat Zone</title>
+    <link rel="icon" href="data:,">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+    
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div id="start-screen-overlay">
+        <div class="start-title-container">
+            <div class="start-brand">COMBAT <span>ZONE</span></div>
+            <div class="start-season">SEASON CANAA RELOAD</div>
+        </div>
+        <div class="press-text">INICIAR</div>
+    </div>
+    
+    <div id="damage-overlay"></div>
+    <div id="crosshair"></div>
+    <div id="sniper-scope">
+        <div class="cross-h"></div>
+        <div class="cross-v"></div>
+        <div class="dot-red"></div>
+    </div>
+    
+    <div id="hud">
+        <div id="info-panel" class="info-panel">
+             <span id="weapon-display" style="color:var(--canaa-blue);">WPN: <span id="weapon-name">RIFLE</span> | </span>
+             <span id="lives-display" style="display:inline;">LIVES: <span id="lives-count">5</span> | </span>
+             <span id="grenade-display" style="color:#ffaa00;">G: <span id="grenade-count">6</span></span>
+             <span id="smoke-display" style="color:#aaa;">| S: <span id="smoke-count">6</span></span>
+             | <span id="pvp-timer-display" style="display:none;">TIME: <span id="pvp-timer-count">04:00</span> | </span>
+             LVL: <span id="level-display">1</span>/10 | KILLS: <span id="score">0</span>
+        </div>
+        <div id="status-bars">
+             <div class="bar-container">
+                 <div class="bar-label">ARMOR <span id="armor">0</span></div>
+                 <div id="armor-bar" class="bar-fill"></div>
+             </div>
+             <div class="bar-container">
+                 <div class="bar-label">HP <span id="hp">100</span></div>
+                 <div id="hp-bar" class="bar-fill"></div>
+             </div>
+        </div>
+        <div id="multiplayer-status">ONLINE: <span id="mp-count">0</span> PLAYERS | ROOM: <span id="room-id">...</span></div>
+        <div id="master-status">★ ROOM HOST</div>
+        <div id="level-indicator">LEVEL 1</div>
+        <div id="pause-btn" class="icon-btn">⚙️</div>
+    </div>
+
+    <div id="top-bar">
+        <div id="mode-switch-btn" class="icon-btn">💻</div>
+        <div id="fullscreen-btn" class="icon-btn">⛶</div>
+    </div>
+    <button id="save-hud-btn" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; padding: 10px 30px; background: var(--canaa-gold); border: none; border-radius: 5px; font-weight: bold; display: none; font-family: 'Orbitron'; font-size: 14px; cursor: pointer; pointer-events: auto !important; color: black;">SAVE POSITIONS</button>
+
+    <div id="rotate-overlay">
+        <div class="rotate-icon">📱</div>
+        <p>ROTATE DEVICE TO PLAY</p>
+    </div>
+    
+    <div id="qr-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:500; flex-direction:column; justify-content:center; align-items:center;">
+        <div style="background:#111; padding:20px; border:2px solid #00FF41; border-radius:10px; text-align:center; max-width:90%;">
+            <h2 style="color:#00FF41; margin-top:0;">SCAN TO JOIN</h2>
+            <img id="qr-image" src="" alt="QR Code" style="border:5px solid white; border-radius:5px; margin-bottom:15px;">
+            <p style="color:#ccc; font-size:12px; margin-bottom:15px; word-break: break-all; user-select: text;" id="qr-link-text"></p>
+            <button class="menu-btn" onclick="document.getElementById('qr-popup').style.display='none'">CLOSE</button>
+        </div>
+    </div>
+
+    <div id="main-menu">
+        <div class="menu-header">
+            <div class="menu-brand">COMBAT <span>ZONE</span></div>
+            <div class="menu-season">SEASON CANAA RELOAD</div>
+        </div>
+        <div class="menu-sidebar" id="start-view">
+            <button class="menu-btn-modern primary" id="play-btn">
+                <div class="btn-content">PLAY NOW<span class="btn-sub">START OPERATION</span></div>
+            </button>
+            <button class="menu-btn-modern mp" id="multiplayer-btn">
+                <div class="btn-content">MULTIPLAYER<span class="btn-sub">RANKED / PVP</span></div>
+            </button>
+            <button class="menu-btn-modern coop" id="coop-btn">
+                <div class="btn-content">CO-OP PVE<span class="btn-sub">ZOMBIE SURVIVAL</span></div>
+            </button>
+            <button class="menu-btn-modern" id="invite-btn" style="border-right-color: #00FF41; color: #00FF41;">
+                <div class="btn-content">INVITE SQUAD<span class="btn-sub">ONLINE</span></div>
+            </button>
+            <button class="menu-btn-modern secondary" id="settings-btn" style="border-right-color: #999; color: #aaa;">
+                <div class="btn-content">LOADOUT<span class="btn-sub">SETTINGS</span></div>
+            </button>
+            <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end;">
+                <button class="menu-btn" id="mobile-fs-btn" style="flex: 1; font-size: 10px; max-width: 80px;">FULLSCREEN</button>
+                <button class="menu-btn danger" id="mobile-exit-btn" style="flex: 1; font-size: 10px; max-width: 60px;">EXIT</button>
+            </div>
+            <div class="menu-footer">CANAAN GAME &nbsp;|&nbsp; 2026</div>
+        </div>
+        <div class="char-info">
+            <div class="char-name">GHOST<br>OPERATOR</div>
+            <div class="char-details">UNIT: SPECIAL FORCES</div>
+        </div>
+
+        <div class="menu-content" id="settings-view" style="display: none; padding: 10px;">
+            <h2 style="margin-bottom: 2px; padding-bottom: 2px; font-size: 0.9em;">SYSTEM</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px 10px; margin-bottom: 8px; text-align: left;">
+                <div class="setting-row" style="margin: 0;">
+                    <label style="font-size: 9px;">VOLUME</label>
+                    <input type="range" id="vol-slider" min="0" max="100" value="50" style="width: 100%; height: 3px;">
+                </div>
+                <div class="setting-row" style="margin: 0;">
+                    <label style="font-size: 9px;">FOV</label>
+                    <input type="range" id="fov-slider" min="50" max="110" value="70" style="width: 100%; height: 3px;">
+                </div>
+                <div class="setting-row" style="margin: 0;">
+                    <label style="font-size: 9px;">SENSITIVITY</label>
+                    <input type="range" id="sens-slider" min="1" max="100" value="50" style="width: 100%; height: 3px;">
+                </div>
+                <div class="setting-row" style="margin: 0;">
+                    <label style="font-size: 9px;">GRAPHICS</label>
+                    <select id="graphics-select" style="background: #000; color: var(--canaa-green); border: 1px solid var(--canaa-green); font-family: 'Rajdhani'; padding: 0 2px; width: 100%; box-sizing: border-box; font-size: 10px; height: 16px;">
+                        <option value="high">HIGH</option>
+                        <option value="low" selected>LOW</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+                <button class="menu-btn secondary" id="edit-hud-btn" style="padding: 5px 8px; margin: 0; font-size: 11px;">EDIT HUD</button>
+                <button class="menu-btn" id="pause-invite-btn" style="border-color: #00FF41; color: #00FF41; padding: 5px 8px; margin: 0; font-size: 11px;">INVITE SQUAD</button>
+                
+                <div style="display: flex; gap: 5px;">
+                    <button class="menu-btn danger" id="abort-mission-btn" style="margin: 0; padding: 5px; font-size: 11px; flex: 1; text-align: center;">ABORT</button>
+                    <button class="menu-btn" id="back-btn" style="border-color: #666; color: #ccc; margin: 0; padding: 5px; font-size: 11px; flex: 1; text-align: center;">BACK</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 6px; font-size: 8px; color: #666; font-family: 'Rajdhani'; border-top: 1px solid #222; padding-top: 3px; text-align: center;">
+                MUSIC BY: PATRICK DE ARTEAGA
+            </div>
+        </div>
+    </div>
+
+    <div id="lobby-screen" style="display: none;">
+        <div class="menu-content" style="border-color: #00f3ff; width: 300px; max-width: 90%;">
+            <h1 id="lobby-title" style="color: #00f3ff; margin: 0;">LOBBY</h1>
+            <div style="font-family: 'Rajdhani'; color: #aaa; margin-bottom: 10px;">Status: <span id="connection-status" style="color: #ffff00">Aguardando oponente...</span></div>
+            <div style="text-align: left; margin-bottom: 5px; color: #fff;">Operators:</div>
+            <div id="lobby-player-list">
+                <div style="color: #666; font-style: italic; padding: 10px; text-align: center;">Searching signal...</div>
+            </div>
+            <div id="pvp-level-selection" style="margin-top: 10px; display: none;">
+                <label style="color: #fff; font-family: 'Rajdhani';">SELECT MAP:</label>
+                <select id="pvp-level-select" style="background: #000; color: #00f3ff; border: 1px solid #00f3ff; font-family: 'Rajdhani'; padding: 5px; width: 100%; margin-top: 5px;">
+                    <option value="1">LEVEL 1 - CONCRETE</option>
+                    <option value="2">LEVEL 2 - MARS</option>
+                    <option value="3">LEVEL 3 - NIGHT OPS</option>
+                    <option value="4">LEVEL 4 - RED ALERT</option>
+                    <option value="5">LEVEL 5 - ALIEN</option>
+                    <option value="6">LEVEL 6 - INDUSTRIAL</option>
+                    <option value="7">LEVEL 7 - LAB</option>
+                    <option value="8">LEVEL 8 - BUNKER</option>
+                    <option value="9">LEVEL 9 - VOID</option>
+                    <option value="10">LEVEL 10 - OPEN ARENA (NEW)</option>
+                </select>
+            </div>
+            <div id="connection-log" style="display: none;"></div>
+            <button class="menu-btn" id="start-mp-btn" disabled style="margin-top: 15px; border-color: #00f3ff; color: #00f3ff;">START</button>
+            <button class="menu-btn secondary" id="lobby-back-btn">BACK</button>
+        </div>
+    </div>
+
+    <div id="game-over-screen" style="display: none;">
+        <div class="menu-content" style="border-color: #ff0000;">
+            <h1 style="color: #ff3333; margin: 0;">SIGNAL LOST</h1>
+            <p style="color: #ccc; font-family: 'Rajdhani';">Agent Eliminated.</p>
+            <button class="menu-btn" id="retry-btn" style="border-color: #ff3333; color: #ff3333;">RETRY</button>
+            <button class="menu-btn secondary" id="menu-return-btn">MENU</button>
+        </div>
+    </div>
+    
+    <div id="level-complete-screen" style="display: none;">
+        <div class="menu-content" style="border-color: var(--canaa-gold);">
+            <h1 style="color: var(--canaa-gold); margin: 0;">SECURE AREA</h1>
+            <p style="color: #ccc; font-family: 'Rajdhani'; margin: 20px 0;">Level Completed.</p>
+            <button class="menu-btn" id="continue-btn" style="border-color: var(--canaa-gold); color: #fff; background: rgba(255,215,0,0.2);">NEXT LEVEL</button>
+        </div>
+    </div>
+    
+    <div id="win-screen" style="display: none;">
+        <div class="menu-content">
+            <h1 style="color: var(--canaa-green); margin: 0;">MISSION ACCOMPLISHED</h1>
+            <div id="victory-stats" style="margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; min-width: 200px;">
+                <h3 style="color: var(--canaa-gold); margin-top: 0; font-size: 14px;">PLACAR FINAL</h3>
+                <div id="victory-player-list" style="text-align: left; font-size: 12px; max-height: 150px; overflow-y: auto;"></div>
+            </div>
+            <button class="menu-btn" id="win-retry-btn">NEW OPERATION</button>
+            <button class="menu-btn secondary" id="win-menu-btn">MENU</button>
+        </div>
+    </div>
+
+    <div id="mobile-ui">
+        <div id="joystick-zone">
+            <div id="joystick-knob"></div>
+        </div>
+        <div id="aim-zone"></div>
+        <div id="fire-btn" class="action-btn">🔫</div>
+        <div id="jump-btn" class="action-btn">▲</div>
+        <div id="aim-btn" class="action-btn">◎</div>
+        <div id="swap-btn" class="action-btn">🔄</div>
+        <div id="cam-toggle-btn">📷</div>
+        <div id="grenade-btn" class="action-btn">💣</div>
+        <div id="smoke-btn" class="action-btn">💨</div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>

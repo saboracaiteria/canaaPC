@@ -1,0 +1,10 @@
+.gemini/
+.agents/
+node_modules/
+out.txt
+*.tmp
+temp/
+ps1/
+.system_generated/
+brain/
+*.~*
