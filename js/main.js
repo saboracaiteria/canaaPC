@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const roomID = urlParams.get('room') || 'global';
             
             if (mode === 'coop') {
-                roomPath = `rooms/coop/${roomID}`; 
+                setRoomPath(`rooms/coop/${roomID}`); 
                 isCoopMode = true; 
                 title.innerText = "CO-OP PVE"; 
                 title.style.color = "#FF00FF"; 
@@ -175,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     resetGame('coop'); 
                 };
             } else {
-                roomPath = `rooms/pvp/${roomID}`; 
+                setRoomPath(`rooms/pvp/${roomID}`); 
                 isCoopMode = false; 
                 title.innerText = "PVP ONLINE"; 
                 title.style.color = "#00f3ff"; 
@@ -258,7 +258,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 },
                 onRemotePlayersUpdate: (d) => {
                     if (!d) return; 
-                    const now = Date.now() + mpServerTimeOffset;
+                    const now = Date.now() + serverTimeOffset;
                     const activeIds = [];
                     let c = 0; 
                     Object.keys(d).forEach(k => { 
@@ -273,7 +273,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         } 
                     });
                     document.getElementById('mp-count').innerText = c; 
-                    isMasterClient = (activeIds.sort()[0] === myUserId);
+                    setIsMasterClient(activeIds.sort()[0] === myUserId);
                     document.getElementById('master-status').style.display = isMasterClient ? 'block' : 'none'; 
                 },
                 onGrenadeUpdate: (data) => {
@@ -1846,7 +1846,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (mode === 'multi') { 
                     setRoomPath(`rooms/pvp/global`); 
                     if (!pvpMatchEndTime || pvpMatchEndTime < (Date.now() + serverTimeOffset)) {
-                        const trueNow = Date.now() + mpServerTimeOffset; 
+                        const trueNow = Date.now() + serverTimeOffset; 
                          // Note: mpMatchEndTime is read-only from import, local logic should handle it
                     }
                     startPVPTimer(); 
