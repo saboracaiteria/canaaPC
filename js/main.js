@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             });
-            startNetworkSync(playerGroup, inputYaw, inputPitch, moveInput, keyState, isGrounded, isInvincible, playerArmor);
+            startNetworkSync(playerGroup, yaw, pitch, moveInput, keyState, isGrounded, isInvincible, playerArmor);
         }
 
         function syncEnemiesFromData(data, level) {
@@ -613,7 +613,7 @@ document.addEventListener('DOMContentLoaded', () => {
             lastShotTime = now; 
             playSound('shoot', settings); 
             recoilAngle = 0.05; 
-            pitch = Math.min(1.4, inputPitch + 0.01); 
+            updateYawPitch(yaw, Math.min(1.4, pitch + 0.01)); 
             gunRecoil = currentWeapon === 1 ? 0.6 : 0.15; 
             fovKick = currentWeapon === 1 ? 2 : 0.5;
             
@@ -922,9 +922,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     moveInput.y = (keyState.w ? -1 : 0) + (keyState.s ? 1 : 0); 
                 }
                 
-                playerGroup.rotation.y = inputYaw;
-                yaw = inputYaw; // Keep local yaw updated for other calculations
-                pitch = inputPitch; // Keep local pitch updated for other calculations
+                playerGroup.rotation.y = yaw;
                 
                 if (Math.abs(moveInput.x) > 0.1 || Math.abs(moveInput.y) > 0.1 || keyState.w || keyState.s || keyState.a || keyState.d) { 
                     walkCycle += 0.2; 
@@ -1093,7 +1091,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                     
-                    const currentPitch = (Math.PI / 2) + inputPitch + recoilAngle;
+                    const currentPitch = (Math.PI / 2) + pitch + recoilAngle;
                     
                     if (!isThirdPerson) {
                         const swayY = Math.sin(walkCycle * 2) * 0.03; 
@@ -1117,37 +1115,37 @@ document.addEventListener('DOMContentLoaded', () => {
                         playerMeshParts.lArmPivot.position.set(-0.22, 0.7, 0);
                     }
                     
-                    if (head) head.rotation.x = inputPitch;
+                    if (head) head.rotation.x = pitch;
                 }
                 
                 if (isThirdPerson) {
-                    const ay = inputYaw; 
+                    const ay = yaw; 
                     const shoulderHeight = 2.0; 
                     const shoulderRight = 0.8; 
                     const camDist = 2.5; 
                     
                     _v1.set(shoulderRight, shoulderHeight, camDist); 
-                    _v1.applyAxisAngle(_vUp, inputYaw); 
+                    _v1.applyAxisAngle(_vUp, yaw); 
                     _v2.copy(playerGroup.position).add(_v1);
                     camera.position.lerp(_v2, 0.15);
                     
                     _v3.set(0, shoulderHeight - 0.8, -10);
-                    _v3.applyAxisAngle(_vUp, inputYaw);
+                    _v3.applyAxisAngle(_vUp, yaw);
                     _v4.copy(playerGroup.position).add(_v3);
-                    _v5.set(0, inputPitch * 5, 0);
+                    _v5.set(0, pitch * 5, 0);
                     camera.lookAt(_v4.add(_v5));
                     
                     if (camera.position.y < playerGroup.position.y + shoulderHeight) camera.position.y = playerGroup.position.y + shoulderHeight;
                 } else {
                     _v1.set(0, 1.65, 0);
-                    _v1.applyAxisAngle(_vUp, inputYaw);
+                    _v1.applyAxisAngle(_vUp, yaw);
                     camera.position.copy(playerGroup.position).add(_v1);
-                    camera.rotation.set(inputPitch + recoilAngle * 0.5, inputYaw, 0);
+                    camera.rotation.set(pitch + recoilAngle * 0.5, yaw, 0);
                 }
                 
                 const speed = 0.18; 
-                _v1.copy(_vFwd).applyAxisAngle(_vUp, inputYaw); 
-                _v2.copy(_vRgt).applyAxisAngle(_vUp, inputYaw);
+                _v1.copy(_vFwd).applyAxisAngle(_vUp, yaw); 
+                _v2.copy(_vRgt).applyAxisAngle(_vUp, yaw);
                 const mx = (_v1.x * -moveInput.y + _v2.x * moveInput.x) * speed; 
                 const mz = (_v1.z * -moveInput.y + _v2.z * moveInput.x) * speed;
                 
@@ -1460,8 +1458,8 @@ document.addEventListener('DOMContentLoaded', () => {
             startPos.y += 1.5; 
             
             const dir = new THREE.Vector3(0, 0, -1); 
-            dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), inputPitch); 
-            dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), inputYaw); 
+            dir.applyAxisAngle(new THREE.Vector3(1, 0, 0), pitch); 
+            dir.applyAxisAngle(new THREE.Vector3(0, 1, 0), yaw); 
             
             sphere.position.copy(startPos); 
             scene.add(sphere);
