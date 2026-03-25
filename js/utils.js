@@ -101,28 +101,35 @@ export function resumeAudio() {
 }
 
 const soundCache = { shoot: new Audio('sons/tiro.mp3') };
-export function playSound(type, settings) {
-    const ctx = initAudio();
-    const osc = ctx.createOscillator(), gain = ctx.createGain(), now = ctx.currentTime, vol = settings.volume;
-    osc.connect(gain);
-    gain.connect(ctx.destination);
+// Silenciar erros de carregamento inicial
+Object.values(soundCache).forEach(a => a.addEventListener('error', () => {}));
 
-    if (type === 'shoot') {
-        const audio = soundCache.shoot.cloneNode();
-        audio.volume = settings.volume;
-        audio.play().catch(() => { });
-    } else if (type === 'jump') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(400, now + 0.2);
-        gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-        osc.start(now); osc.stop(now + 0.2);
-    } else if (type === 'step') {
-        osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now);
-        gain.gain.setValueAtTime(0.2 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-        osc.start(now); osc.stop(now + 0.05);
-    } else if (type === 'heal') {
-        osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-        gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now); osc.stop(now + 0.3);
+export function playSound(type, settings) {
+    try {
+        const ctx = initAudio();
+        const osc = ctx.createOscillator(), gain = ctx.createGain(), now = ctx.currentTime, vol = settings.volume;
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'shoot') {
+            const audio = soundCache.shoot.cloneNode();
+            audio.volume = settings.volume;
+            audio.play().catch(() => { });
+        } else if (type === 'jump') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(400, now + 0.2);
+            gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now); osc.stop(now + 0.2);
+        } else if (type === 'step') {
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now);
+            gain.gain.setValueAtTime(0.2 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+            osc.start(now); osc.stop(now + 0.05);
+        } else if (type === 'heal') {
+            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
+            gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+            osc.start(now); osc.stop(now + 0.3);
+        }
+    } catch (e) {
+        // Ignorar erros de áudio se o contexto ou arquivo falhar
     }
 }
 

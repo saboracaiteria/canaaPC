@@ -117,41 +117,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
         function playMenuMusic() { 
-            if (bgmPlayer) { 
-                bgmPlayer.pause(); 
-                bgmPlayer.onended = null; 
-                bgmPlayer = null; 
-            } 
-            const url = `sons/top1.mp3`; 
-            bgmPlayer = new Audio(url); 
-            bgmPlayer.loop = true; 
-            bgmPlayer.volume = settings.volume; 
-            bgmPlayer.play().catch(() => {}); 
-            currentBgmTrack = 1; 
+            try {
+                if (bgmPlayer) { 
+                    bgmPlayer.pause(); 
+                    bgmPlayer.onended = null; 
+                    bgmPlayer = null; 
+                } 
+                const url = `sons/top1.mp3`; 
+                bgmPlayer = new Audio(url); 
+                bgmPlayer.loop = true; 
+                bgmPlayer.volume = settings.volume; 
+                bgmPlayer.play().catch(() => {}); 
+                currentBgmTrack = 1; 
+            } catch (e) { }
         }
 
         function playGameMusic() { 
-            if (bgmPlayer) { 
-                bgmPlayer.pause(); 
-                bgmPlayer.onended = null; 
-            } 
-            let nextTrack; 
-            const available = []; 
-            for (let i = 2; i <= TOTAL_TRACKS; i++) if (i !== currentBgmTrack) available.push(i); 
-            if (available.length > 0) nextTrack = available[Math.floor(Math.random() * available.length)]; 
-            else nextTrack = 2; 
-            currentBgmTrack = nextTrack; 
-            const url = `sons/top${currentBgmTrack}.mp3`; 
-            bgmPlayer = new Audio(url); 
-            bgmPlayer.loop = false; 
-            bgmPlayer.volume = settings.volume; 
-            bgmPlayer.onended = () => { playGameMusic(); }; 
-            bgmPlayer.play().catch(() => {}); 
+            try {
+                if (bgmPlayer) { 
+                    bgmPlayer.pause(); 
+                    bgmPlayer.onended = null; 
+                } 
+                let nextTrack; 
+                const available = []; 
+                for (let i = 2; i <= TOTAL_TRACKS; i++) if (i !== currentBgmTrack) available.push(i); 
+                if (available.length > 0) nextTrack = available[Math.floor(Math.random() * available.length)]; 
+                else nextTrack = 2; 
+                currentBgmTrack = nextTrack; 
+                const url = `sons/top${currentBgmTrack}.mp3`; 
+                bgmPlayer = new Audio(url); 
+                bgmPlayer.loop = false; 
+                bgmPlayer.volume = settings.volume; 
+                bgmPlayer.onended = () => { playGameMusic(); }; 
+                bgmPlayer.play().catch(() => {}); 
+            } catch (e) { }
         }
 
 
 
-        function startMultiplayerLobby(mode) {
+        function showLobby(mode) {
             cleanupMultiplayer(scene); 
             document.getElementById("start-view").style.display = "none"; 
             document.getElementById("lobby-screen").style.display = "flex";
