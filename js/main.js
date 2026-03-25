@@ -24,6 +24,9 @@ import {
 import { 
     createEnemyMesh, createRemotePlayerMesh, spawnEnemies, killEnemyLocal, updateEnemies 
 } from './enemies.js';
+import { 
+    initInput, resetInput, updateYawPitch, keyState, moveInput, yaw, pitch, isManualFiring, isAiming 
+} from './input.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     // Configuração Firebase
@@ -45,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let roomPath = ''; 
         let serverTimeOffset = 0; 
         let isThirdPerson = true, wasManualFiring = false, currentWeapon = 0;
-        let pitch = 0, yaw = 0, velocityY = 0, isGrounded = true, recoil = 0, gunRecoilZ = 0, lastShotTime = 0, lastStepTime = 0;
+        let velocityY = 0, isGrounded = true, recoil = 0, gunRecoilZ = 0, lastShotTime = 0, lastStepTime = 0;
         
         window.walkCycle = 0;
         let walkCycle = 0;
@@ -482,8 +485,7 @@ document.addEventListener('DOMContentLoaded', () => {
             velocityY = 0; 
             isGrounded = true; 
             playerGroup.position.copy(spawnPos); 
-            updateYawPitch(0, 0); // Reset yaw and pitch
-            yaw = Math.random() * Math.PI * 2; // Randomize initial yaw
+            updateYawPitch(Math.random() * Math.PI * 2, 0); 
             
             if (invincibilityTimeout) clearTimeout(invincibilityTimeout); 
             isInvincible = true; 
