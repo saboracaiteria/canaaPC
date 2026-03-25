@@ -1,4 +1,5 @@
 import { ref, set, onValue, off, onDisconnect, update, remove, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js";
+import * as THREE from 'three';
 import { PLAYER_SYNC_RATE } from './constants.js';
 import { logSystem, clearSceneObject } from './utils.js';
 

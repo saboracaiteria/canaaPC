@@ -1,3 +1,4 @@
+import * as THREE from 'three';
 import { 
     initMultiplayer, connectLobby, cleanupMultiplayer, setupPresence, 
     startNetworkSync, registerKill as mpRegisterKill, registerTeamKill as mpRegisterTeamKill,
@@ -5,7 +6,9 @@ import {
     isMasterClient as mpIsMasterClient, roomPath as mpRoomPath, 
     serverTimeOffset as mpServerTimeOffset, pvpMatchEndTime as mpMatchEndTime 
 } from './multiplayer.js';
-import { runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getDatabase, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
 import { setupMinimap, drawMinimap, updateTimerUI, updateWeaponUI, updateGrenadeUI, triggerHitMarker, applyGraphicsSettings, showGameOver } from './ui.js';
 
 import { firebaseConfig, GRAVITY, JUMP_FORCE, mazeSize, cellSize, PLAYER_SYNC_RATE, BOT_SYNC_RATE, config, TOTAL_TRACKS, mazeMap } from './constants.js';

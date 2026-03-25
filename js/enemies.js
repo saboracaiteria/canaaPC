@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { mazeSize, mazeMap } from './constants.js';
 import { clearSceneObject, mulberry32, playSound } from './utils.js';
 import { createHumanoidMesh, createHPBar } from './graphics.js';
-import { ref, update } from 'https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js';
+import { ref, update } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
 
 const _v1 = new THREE.Vector3();
 const _vDir = new THREE.Vector3();
