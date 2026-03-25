@@ -216,7 +216,7 @@ export function updateEnemies(dt, {
             const e = enemies[i]; if (!e || e.userData.dead) continue;
             
             // OPTIMIZATION: Early distance culling against camera
-            const cameraDist = camera ? camera.position.distanceSquaredTo(e.position) : 10000;
+            const cameraDist = camera ? camera.position.distanceToSquared(e.position) : 10000;
             if (cameraDist > 6400) { // 80^2
                 e.visible = false;
                 if (isMultiplayerMode && isMasterClient) {
