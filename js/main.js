@@ -29,6 +29,7 @@ import {
 } from './input.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+    console.log("Canaan Engine: DOMContentLoaded - Booting...");
     // Configuração Firebase
         
         let app, auth, db; 
@@ -38,7 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
             db = getDatabase(app); 
             initMultiplayer(db);
         } catch (e) { 
-            console.error(e); 
+            console.error("Firebase Init Error:", e); 
         }
 
         // Variáveis de Jogo e Sincronização Multiplayer
@@ -1936,6 +1937,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
                 if (!isPC) document.getElementById('mobile-ui').style.display = 'block'; 
             } catch (e) { 
+                console.error("Fatal Engine Error:", e);
                 logSystem("Fatal error: " + e.message, "error"); 
                 document.getElementById('main-menu').style.display = 'block'; 
             }
