@@ -60,7 +60,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const bulletRaycaster = new THREE.Raycaster(), aimRaycaster = new THREE.Raycaster();
         let playerGroup, playerMesh, gunGroup, enemies = [], bullets = [], healthKits = [], armorVests = [], grenadePacks = [];
         // world-related variables are now imported from world.js
-        let score = 0, playerHP = 100, playerArmor = 0, playerLives = 5, isPlaying = false, isPC = true, gamePaused = false, currentLevel = 1, maxLevels = 10;
+        let score = 0, playerHP = 100, playerArmor = 0, playerLives = 5, isPlaying = false, gamePaused = false, currentLevel = 1, maxLevels = 10, lobbyPlayerCount = 0;
+        let isPC = !('ontouchstart' in window); 
         let pvpTimer = 0, pvpTimerInterval = null, isInvincible = false, invincibilityTimeout = null; 
         let levelStartTime = 0; 
         let spawnedLevel = -1; 
@@ -183,6 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.color = "#00f3ff"; 
                 levelSelectDiv.style.display = "block";
                 btn.onclick = () => { 
+                    if (lobbyPlayerCount < 2) { 
+                        logSystem("OPERADORES INSUFICIENTES (MÍN. 2)", "#ff3333");
+                        playSound('heal', settings); // Som de erro adaptado
+                        return; 
+                    }
                     currentLevel = parseInt(document.getElementById("pvp-level-select").value); 
                     const trueNow = Date.now() + serverTimeOffset; 
                     update(ref(db, `${roomPath}/state`), { gameRunning: true, level: currentLevel, endTime: trueNow + 240000, enemies: null }).catch(() => {}); 
@@ -221,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 div.innerHTML = `<span>${key === myUserId ? "VOCÊ" : `Op. ${key.substring(0, 4)}`}${roleTag}</span> <span>ONLINE</span>`; 
                 listEl.appendChild(div);
             });
+            lobbyPlayerCount = count; 
             
             document.getElementById("start-mp-btn").style.display = "block"; 
             document.getElementById("pvp-level-selection").style.display = (!isCoopMode) ? "block" : "none";
@@ -277,7 +284,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('master-status').style.display = isMasterClient ? 'block' : 'none'; 
                 },
                 onGrenadeUpdate: (data) => {
-                    if (!data) return;
+                    if (!data) return; 
                     Object.keys(data).forEach(k => { 
                         if (!remoteGrenadesHandled.has(k) && !k.startsWith(myUserId)) { 
                             remoteGrenadesHandled.add(k); 
@@ -923,6 +930,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 playerGroup.rotation.y = yaw;
+                camera.rotation.x = pitch; 
                 
                 if (Math.abs(moveInput.x) > 0.1 || Math.abs(moveInput.y) > 0.1 || keyState.w || keyState.s || keyState.a || keyState.d) { 
                     walkCycle += 0.2; 
@@ -1819,7 +1827,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 playerLives = 5; 
                 resetInput();
-                updateYawPitch(0, 0);
+                updateYawPitch(0, 0); 
+                if (resetInput) resetInput(); 
                 velocityY = 0; isGrounded = true; 
                 camera.rotation.set(0, 0, 0);
                 
@@ -2156,17 +2165,22 @@ document.addEventListener('DOMContentLoaded', () => {
             executeGrenadeThrow,
             resumeGame,
             jumpForce: JUMP_FORCE,
-            onPause: () => {
-                isPlaying = false; gamePaused = true; document.exitPointerLock(); 
-                document.getElementById('settings-view').style.display = 'block'; 
-                document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
-                document.getElementById('main-menu').style.display = 'block'; 
-                document.getElementById('main-menu').classList.add('paused-mode'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
-            },
-            onJump: () => {
-                if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
+            callbacks: { 
+                onPause: () => { 
+                    isPlaying = false; gamePaused = true; document.exitPointerLock(); 
+                    document.getElementById('settings-view').style.display = 'block'; 
+                    document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
+                    document.getElementById('main-menu').style.display = 'block'; 
+                    document.getElementById('main-menu').classList.add('paused-mode'); 
+                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
+                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
+                },
+                onJump: () => {
+                    if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
+                },
+                onFire: () => { fireWeapon(); },
+                setPitch: (p) => { updateYawPitch(yaw, p); },
+                setYaw: (y) => { updateYawPitch(y, pitch); }
             }
         });
         init(); 

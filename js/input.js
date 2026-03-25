@@ -114,11 +114,15 @@ function setupMobileControls(callbacks) {
     const jz = document.getElementById('joystick-zone'); 
     
     jz.addEventListener('touchstart', (e) => { 
-        if (!settingsRef.isEditing) { const t = e.changedTouches[0]; joyId = t.identifier; jSX = t.clientX; jSY = t.clientY; } 
-    }); 
+        if (!settingsRef.isEditing) { 
+            e.preventDefault();
+            const t = e.changedTouches[0]; joyId = t.identifier; jSX = t.clientX; jSY = t.clientY; 
+        } 
+    }, { passive: false }); 
     
     jz.addEventListener('touchmove', (e) => { 
         if (settingsRef.isEditing) return; 
+        e.preventDefault();
         for (let t of e.changedTouches) {
             if (t.identifier === joyId) { 
                 const dx = t.clientX - jSX, dy = t.clientY - jSY, d = Math.min(50, Math.sqrt(dx * dx + dy * dy)), a = Math.atan2(dy, dx); 
@@ -128,7 +132,7 @@ function setupMobileControls(callbacks) {
                 moveInput.y = (Math.sin(a) * d) / 50; 
             } 
         }
-    }); 
+    }, { passive: false }); 
     
     jz.addEventListener('touchend', (e) => { 
         for (let t of e.changedTouches) {
@@ -143,10 +147,12 @@ function setupMobileControls(callbacks) {
     }); 
     
     document.getElementById('aim-zone').addEventListener('touchstart', (e) => { 
+        e.preventDefault();
         const t = e.changedTouches[0]; aimId = t.identifier; lTX = t.clientX; lTY = t.clientY; 
-    }); 
+    }, { passive: false }); 
     
     document.getElementById('aim-zone').addEventListener('touchmove', (e) => { 
+        e.preventDefault();
         for (let t of e.changedTouches) {
             if (t.identifier === aimId) { 
                 yaw -= (t.clientX - lTX) * settingsRef.sens * 2.2; 
@@ -154,15 +160,16 @@ function setupMobileControls(callbacks) {
                 lTX = t.clientX; lTY = t.clientY; 
             } 
         }
-    }); 
+    }, { passive: false }); 
     
     const fb = document.getElementById('fire-btn'); 
     fb.addEventListener('touchstart', (e) => { 
         e.preventDefault(); const t = e.changedTouches[0]; fireId = t.identifier; fTX = t.clientX; fTY = t.clientY; isManualFiring = true; isAiming = true; 
-    }); 
+    }, { passive: false }); 
     
     fb.addEventListener('touchmove', (e) => { 
         if (settingsRef.isEditing) return; 
+        e.preventDefault();
         for (let t of e.changedTouches) {
             if (t.identifier === fireId) { 
                 yaw -= (t.clientX - fTX) * settingsRef.sens * 2.2; 
@@ -170,14 +177,14 @@ function setupMobileControls(callbacks) {
                 fTX = t.clientX; fTY = t.clientY; 
             } 
         }
-    }); 
+    }, { passive: false }); 
     
     fb.addEventListener('touchend', () => { isManualFiring = false; isAiming = false; }); 
     
-    document.getElementById('aim-btn').addEventListener('touchstart', (e) => { e.preventDefault(); isAiming = !isAiming; }); 
-    document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); callbacks.onJump(); }); 
-    document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraModeRef(); }); 
-    document.getElementById('swap-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleWeaponRef(); }); 
+    document.getElementById('aim-btn').addEventListener('touchstart', (e) => { e.preventDefault(); isAiming = !isAiming; }, { passive: false }); 
+    document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); callbacks.onJump(); }, { passive: false }); 
+    document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraModeRef(); }, { passive: false }); 
+    document.getElementById('swap-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleWeaponRef(); }, { passive: false }); 
 }
 
 export function updateYawPitch(y, p) {
