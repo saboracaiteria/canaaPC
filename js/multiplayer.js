@@ -11,6 +11,11 @@ export let roomPath = '';
 export let serverTimeOffset = 0;
 export let pvpMatchEndTime = 0;
 
+export function setMyUserId(val) { myUserId = val; }
+export function setRoomPath(val) { roomPath = val; }
+export function setIsMasterClient(val) { isMasterClient = val; }
+export function setMatchEndTime(val) { pvpMatchEndTime = val; }
+
 let database = null;
 let networkInterval = null;
 let unsubLobbyPlayers = null, unsubGamePlayers = null, unsubMyPresence = null, unsubCoopLevel = null, unsubCoopEnemies = null, unsubGrenades = null;
@@ -39,6 +44,9 @@ export function cleanupMultiplayer(scene) {
     remotePlayers = {}; 
     networkInterval = null; 
     myRef = null;
+    myUserId = null;
+    roomPath = '';
+    isMasterClient = false;
 }
 
 export function connectLobby(auth, callbacks) {

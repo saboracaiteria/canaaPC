@@ -4,7 +4,8 @@ import {
     startNetworkSync, registerKill as mpRegisterKill, registerTeamKill as mpRegisterTeamKill,
     myUserId, myRef, remotePlayers, 
     isMasterClient, roomPath, 
-    serverTimeOffset, pvpMatchEndTime 
+    serverTimeOffset, pvpMatchEndTime,
+    setMyUserId, setRoomPath, setIsMasterClient, setMatchEndTime
 } from './multiplayer.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
@@ -228,8 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function cleanupMp() {
             cleanupMultiplayer(scene);
-            myUserId = null;
-            myRef = null;
         }
 
         function setupPresenceInit() {
@@ -1845,15 +1844,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (armorEl) armorEl.innerText = 0; 
                 
                 if (mode === 'multi') { 
-                    roomPath = `rooms/pvp/global`; 
-                    if (!mpMatchEndTime || mpMatchEndTime < (Date.now() + mpServerTimeOffset)) {
+                    setRoomPath(`rooms/pvp/global`); 
+                    if (!pvpMatchEndTime || pvpMatchEndTime < (Date.now() + serverTimeOffset)) {
                         const trueNow = Date.now() + mpServerTimeOffset; 
                          // Note: mpMatchEndTime is read-only from import, local logic should handle it
                     }
                     startPVPTimer(); 
                 }
                 if (mode === 'coop') { 
-                    roomPath = `rooms/coop/global`; 
+                    setRoomPath(`rooms/coop/global`); 
                     if (currentLevel === 0) currentLevel = 1; 
                 }
 
