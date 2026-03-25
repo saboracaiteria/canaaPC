@@ -2,13 +2,13 @@ import * as THREE from 'three';
 import { 
     initMultiplayer, connectLobby, cleanupMultiplayer, setupPresence, 
     startNetworkSync, registerKill as mpRegisterKill, registerTeamKill as mpRegisterTeamKill,
-    myUserId as mpUserId, myRef as mpRef, remotePlayers as mpRemotePlayers, 
-    isMasterClient as mpIsMasterClient, roomPath as mpRoomPath, 
-    serverTimeOffset as mpServerTimeOffset, pvpMatchEndTime as mpMatchEndTime 
+    myUserId, myRef, remotePlayers, 
+    isMasterClient, roomPath, 
+    serverTimeOffset, pvpMatchEndTime 
 } from './multiplayer.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
 import { getAuth } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
-import { getDatabase, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
+import { getDatabase, ref, set, update, onValue, off, runTransaction } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
 import { setupMinimap, drawMinimap, updateTimerUI, updateWeaponUI, updateGrenadeUI, triggerHitMarker, applyGraphicsSettings, showGameOver } from './ui.js';
 
 import { firebaseConfig, GRAVITY, JUMP_FORCE, mazeSize, cellSize, PLAYER_SYNC_RATE, BOT_SYNC_RATE, config, TOTAL_TRACKS, mazeMap } from './constants.js';
@@ -43,11 +43,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Variáveis de Jogo e Sincronização Multiplayer
-        let myUserId = null, myRef = null, isMultiplayerMode = false, isCoopMode = false;
-        let isMasterClient = false; 
+        let isMultiplayerMode = false, isCoopMode = false;
         let hasResetLobbyState = false; 
-        let roomPath = ''; 
-        let serverTimeOffset = 0; 
         let isThirdPerson = true, wasManualFiring = false, currentWeapon = 0;
         let velocityY = 0, isGrounded = true, recoil = 0, gunRecoilZ = 0, lastShotTime = 0, lastStepTime = 0;
         
@@ -60,10 +57,9 @@ document.addEventListener('DOMContentLoaded', () => {
         let minimapCanvas, minimapCtx;
 
         const bulletRaycaster = new THREE.Raycaster(), aimRaycaster = new THREE.Raycaster();
-        let playerGroup, playerMesh, gunGroup, enemies = [], bullets = [], healthKits = [];
+        let playerGroup, playerMesh, gunGroup, enemies = [], bullets = [], healthKits = [], armorVests = [], grenadePacks = [];
         // world-related variables are now imported from world.js
-        let score = 0, playerHP = 100, playerLives = 5, isPlaying = false, isPC = true, gamePaused = false, currentLevel = 1, maxLevels = 10;
-        let pvpMatchEndTime = 0; 
+        let score = 0, playerHP = 100, playerArmor = 0, playerLives = 5, isPlaying = false, isPC = true, gamePaused = false, currentLevel = 1, maxLevels = 10;
         let pvpTimer = 0, pvpTimerInterval = null, isInvincible = false, invincibilityTimeout = null; 
         let levelStartTime = 0; 
         let spawnedLevel = -1; 
@@ -95,11 +91,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let lastSentPosition = new THREE.Vector3(0, 0, 0), lastSentRotation = 0, lastSentTime = 0;
 
-        let playerArmor = 0; 
         let grenades = { explosive: 6, smoke: 6 }; 
         let activeGrenades = []; 
-        let armorVests = []; 
-        let grenadePacks = []; 
         let bgmPlayer = null; 
         let currentBgmTrack = 0; 
 
