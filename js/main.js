@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let playerGroup, playerMesh, gunGroup, enemies = [], bullets = [], healthKits = [], armorVests = [], grenadePacks = [];
         // world-related variables are now imported from world.js
         let score = 0, playerHP = 100, playerArmor = 0, playerLives = 5, isPlaying = false, gamePaused = false, currentLevel = 1, maxLevels = 10, lobbyPlayerCount = 0;
-        let isPC = !('ontouchstart' in window); 
+        let isPC = !('ontouchstart' in window || navigator.maxTouchPoints > 0); 
         let pvpTimer = 0, pvpTimerInterval = null, isInvincible = false, invincibilityTimeout = null; 
         let levelStartTime = 0; 
         let spawnedLevel = -1; 
@@ -2033,13 +2033,17 @@ document.addEventListener('DOMContentLoaded', () => {
             const modeBtn = document.getElementById('mode-switch-btn');
             if (modeBtn) {
                 modeBtn.innerText = isPC ? "💻" : "📱";
-                modeBtn.onclick = () => { 
+                modeBtn.addEventListener('click', () => {
                     isPC = !isPC; 
                     modeBtn.innerText = isPC ? "💻" : "📱"; 
                     // Mostra ou esconde UI Mobile independentemente de estar jogando agora
                     const mUI = document.getElementById('mobile-ui');
-                    if (mUI) mUI.style.display = isPC ? 'none' : 'block';
-                };
+                    if (mUI) {
+                        mUI.style.display = isPC ? 'none' : 'block';
+                        // Force layout update for joystick and aim zones
+                        window.dispatchEvent(new Event('resize'));
+                    }
+                });
             }
 
             document.getElementById('play-btn').onclick = () => { resetGame('single'); }; 
