@@ -247,7 +247,25 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             lobbyPlayerCount = count; 
             
-            document.getElementById("start-mp-btn").style.display = "block"; 
+            const isHost = (activeIds[0] === myUserId);
+            const startBtn = document.getElementById("start-mp-btn");
+            const statusEl = document.getElementById("connection-status");
+            
+            if (startBtn) {
+                startBtn.style.display = isHost ? "block" : "none";
+                startBtn.classList.toggle('disabled', false); // Ensure it's never visually disabled for host
+            }
+            
+            if (statusEl) {
+                if (count >= 2) {
+                    statusEl.innerText = "ESQUADRÃO PRONTO!";
+                    statusEl.style.color = "#00FF41";
+                } else {
+                    statusEl.innerText = isHost ? "PRONTO PARA OPERAÇÃO SOLO..." : "AGUARDANDO HOST...";
+                    statusEl.style.color = isHost ? "#00f3ff" : "#ffff00";
+                }
+            }
+            
             document.getElementById("pvp-level-selection").style.display = (!isCoopMode) ? "block" : "none";
             if (count === 0) listEl.innerHTML = '<div style="padding:10px; text-align:center">Nenhum operador ativo.</div>';
         }
