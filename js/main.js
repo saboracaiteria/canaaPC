@@ -180,6 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById("lobby-screen").style.display = "flex";
             const title = document.getElementById("lobby-title");
             const btn = document.getElementById("start-mp-btn");
+            if (btn) { btn.style.display = "block"; btn.classList.remove('disabled'); }
             const levelSelectDiv = document.getElementById("pvp-level-selection");
             hasResetLobbyState = false; 
             
@@ -247,13 +248,15 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             lobbyPlayerCount = count; 
             
-            const isHost = (activeIds[0] === myUserId);
+            const isHost = (activeIds[0] === myUserId) || (activeIds.length === 1 && activeIds[0] === myUserId);
             const startBtn = document.getElementById("start-mp-btn");
             const statusEl = document.getElementById("connection-status");
             
             if (startBtn) {
-                startBtn.style.display = isHost ? "block" : "none";
-                startBtn.classList.toggle('disabled', false); // Ensure it's never visually disabled for host
+                // In Coop, everyone should see the start button if it's a squad play, or at least the lead.
+                // In PVP, only host starts.
+                startBtn.style.display = (isHost || isCoopMode) ? "block" : "none";
+                startBtn.classList.toggle('disabled', false); 
             }
             
             if (statusEl) {
