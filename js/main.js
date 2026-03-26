@@ -2141,8 +2141,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const pauseBtnEl = document.getElementById('pause-btn');
             const pauseGameHandler = (e) => { 
-                e.stopPropagation(); 
-                if (e.type === 'touchstart') e.preventDefault();
+                if (e) e.stopPropagation(); 
+                if (e && e.type === 'touchstart') e.preventDefault();
                 if (!isPlaying) return; 
                 isPlaying = false; 
                 gamePaused = true; 
@@ -2153,6 +2153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('main-menu').classList.add('paused-mode'); 
                 document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
                 document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
+                syncMobileUIVisibility();
             };
             pauseBtnEl.addEventListener('click', pauseGameHandler);
             pauseBtnEl.addEventListener('touchstart', pauseGameHandler, { passive: false });
@@ -2193,6 +2194,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('crosshair').style.display = 'block'; 
                 document.getElementById('mobile-ui').style.display = 'block'; 
                 document.getElementById('save-hud-btn').style.display = 'block'; 
+                setupHUDDrag(); // Reactivate drag listeners
             };
             editHudBtnEl.onclick = null;
             editHudBtnEl.addEventListener('click', editHudHandler);

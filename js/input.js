@@ -147,11 +147,13 @@ function setupMobileControls(callbacks) {
     }); 
     
     document.getElementById('aim-zone').addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
         e.preventDefault();
         const t = e.changedTouches[0]; aimId = t.identifier; lTX = t.clientX; lTY = t.clientY; 
     }, { passive: false }); 
     
     document.getElementById('aim-zone').addEventListener('touchmove', (e) => { 
+        if (settingsRef.isEditing) return;
         e.preventDefault();
         for (let t of e.changedTouches) {
             if (t.identifier === aimId) { 
@@ -199,15 +201,35 @@ function setupMobileControls(callbacks) {
         }
     });
 
-    document.getElementById('aim-btn').addEventListener('touchstart', (e) => { e.preventDefault(); isAiming = !isAiming; }, { passive: false }); 
-    document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); callbacks.onJump(); }, { passive: false }); 
-    document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraModeRef(); }, { passive: false }); 
-    document.getElementById('swap-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleWeaponRef(); }, { passive: false }); 
+    document.getElementById('aim-btn').addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
+        e.preventDefault(); 
+        isAiming = !isAiming; 
+    }, { passive: false }); 
+    
+    document.getElementById('jump-btn').addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
+        e.preventDefault(); 
+        callbacks.onJump(); 
+    }, { passive: false }); 
+    
+    document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
+        e.preventDefault(); 
+        toggleCameraModeRef(); 
+    }, { passive: false }); 
+    
+    document.getElementById('swap-btn').addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
+        e.preventDefault(); 
+        toggleWeaponRef(); 
+    }, { passive: false }); 
 
     // Granadas e Fumos Mobile
     const gb = document.getElementById('grenade-btn');
     if (gb) {
         gb.addEventListener('touchstart', (e) => {
+            if (settingsRef.isEditing) return;
             e.preventDefault();
             if(!isChargingGrenade) {
                 isChargingGrenade = true;
@@ -227,6 +249,7 @@ function setupMobileControls(callbacks) {
     const sb = document.getElementById('smoke-btn');
     if (sb) {
         sb.addEventListener('touchstart', (e) => {
+            if (settingsRef.isEditing) return;
             e.preventDefault();
             if(!isChargingGrenade) {
                 isChargingGrenade = true;
