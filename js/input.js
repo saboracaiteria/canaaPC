@@ -164,6 +164,7 @@ function setupMobileControls(callbacks) {
     
     const fb = document.getElementById('fire-btn'); 
     fb.addEventListener('touchstart', (e) => { 
+        if (settingsRef.isEditing) return;
         e.preventDefault(); const t = e.changedTouches[0]; fireId = t.identifier; fTX = t.clientX; fTY = t.clientY; isManualFiring = true; isAiming = true; 
     }, { passive: false }); 
     
@@ -179,12 +180,35 @@ function setupMobileControls(callbacks) {
         }
     }, { passive: false }); 
     
-    fb.addEventListener('touchend', () => { isManualFiring = false; isAiming = false; }); 
-    
+    fb.addEventListener('touchend', (e) => { 
+        for (let t of e.changedTouches) {
+            if (t.identifier === fireId) {
+                fireId = null;
+                isManualFiring = false; 
+                isAiming = false; 
+            }
+        }
+    }); 
+    fb.addEventListener('touchcancel', (e) => { 
+        for (let t of e.changedTouches) {
+            if (t.identifier === fireId) {
+                fireId = null;
+                isManualFiring = false; 
+                isAiming = false; 
+            }
+        }
+    });
+
     document.getElementById('aim-btn').addEventListener('touchstart', (e) => { e.preventDefault(); isAiming = !isAiming; }, { passive: false }); 
     document.getElementById('jump-btn').addEventListener('touchstart', (e) => { e.preventDefault(); callbacks.onJump(); }, { passive: false }); 
     document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraModeRef(); }, { passive: false }); 
     document.getElementById('swap-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleWeaponRef(); }, { passive: false }); 
+
+    // Preveni o menu de contexto em todos os botões para não travar o jogo
+    ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'cam-toggle-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'aim-zone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('contextmenu', (e) => e.preventDefault());
+    });
 }
 
 export function updateYawPitch(y, p) {

@@ -1231,7 +1231,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function init() {
             isPC = !(/Android|iPhone|iPad/i.test(navigator.userAgent)); 
-            document.getElementById('mode-switch-btn').innerText = isPC ? "💻" : "📱";
             
             initWorld(settings, onResize);
             startGameLogic();
@@ -2025,15 +2024,37 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => btnElement.innerHTML = originalHTML, 2000); 
             } catch (e) { 
                 btnElement.innerText = "ERROR ❌"; 
-                setTimeout(() => btnElement.innerHTML = originalHTML, 2000); 
-            } 
-        };
+                setTimeout(() => btnElement.innerHTML = originalHTML, 2000);         function setupUI() {
+            const modeBtn = document.getElementById('mode-switch-btn');
+            if (modeBtn) {
+                modeBtn.innerText = isPC ? "💻" : "📱";
+                modeBtn.onclick = () => { 
+                    isPC = !isPC; 
+                    modeBtn.innerText = isPC ? "💻" : "📱"; 
+                    if (isPlaying) { 
+                        document.getElementById('mobile-ui').style.display = isPC ? 'none' : 'block'; 
+                    } 
+                };
+            }
 
-        function setupUI() {
             document.getElementById('play-btn').onclick = () => { resetGame('single'); }; 
             document.getElementById('multiplayer-btn').onclick = () => showLobby('pvp'); 
             document.getElementById('coop-btn').onclick = () => showLobby('coop');
             
+            const fsHandler = () => goFullscreen();
+            const fsBtn = document.getElementById('fullscreen-btn');
+            if (fsBtn) fsBtn.onclick = fsHandler;
+            const mFsBtn = document.getElementById('mobile-fs-btn');
+            if (mFsBtn) mFsBtn.onclick = fsHandler;
+
+            const exitBtn = document.getElementById('mobile-exit-btn');
+            if (exitBtn) {
+                exitBtn.onclick = () => {
+                    window.close();
+                    setTimeout(() => window.location.href = "about:blank", 100);
+                };
+            }
+
             const inviteBtn = document.getElementById('invite-btn'); 
             if (inviteBtn) inviteBtn.onclick = () => inviteAction(inviteBtn); 
             const pauseInviteBtn = document.getElementById('pause-invite-btn'); 
@@ -2048,7 +2069,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('start-view').style.display = 'flex'; 
             };
             
-            // FIX IPHONE PAUSE: Usando touchstart para garantir que o painel de aim não roube o evento
             const pauseBtnEl = document.getElementById('pause-btn');
             const pauseGameHandler = (e) => { 
                 e.stopPropagation(); 
@@ -2147,6 +2167,41 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             abortBtnEl.onclick = null;
             abortBtnEl.addEventListener('click', abortBtnHandler);
+
+            // Handlers para telas de fim de jogo
+            document.getElementById('retry-btn').onclick = () => { 
+                if (isMultiplayerMode) { 
+                    document.getElementById('game-over-screen').style.display = 'none'; 
+                    showLobby(isCoopMode ? 'coop' : 'pvp'); 
+                } else { 
+                    resetGame('single'); 
+                } 
+            };
+            document.getElementById('win-retry-btn').onclick = () => { 
+                if (isMultiplayerMode) { 
+                    document.getElementById('win-screen').style.display = 'none'; 
+                    showLobby(isCoopMode ? 'coop' : 'pvp'); 
+                } else { 
+                    resetGame('single'); 
+                } 
+            };
+            document.getElementById('continue-btn').onclick = () => {
+                document.getElementById('level-complete-screen').style.display = 'none'; 
+                nextLevel();
+            };
+            const returnToMenu = () => { 
+                document.getElementById('game-over-screen').style.display = 'none'; 
+                document.getElementById('win-screen').style.display = 'none'; 
+                document.getElementById('main-menu').style.display = 'block'; 
+                document.getElementById('start-view').style.removeProperty('display'); 
+                document.getElementById('start-view').style.display = 'flex'; 
+                document.getElementById('hud').style.display = 'none'; 
+                document.getElementById('crosshair').style.display = 'none'; 
+                scene.add(camera); 
+                playMenuMusic(); 
+            };
+            document.getElementById('menu-return-btn').onclick = returnToMenu;
+            document.getElementById('win-menu-btn').onclick = returnToMenu;
         }
 
         function toggleWeapon() { 
@@ -2165,23 +2220,22 @@ document.addEventListener('DOMContentLoaded', () => {
             executeGrenadeThrow,
             resumeGame,
             jumpForce: JUMP_FORCE,
-            callbacks: { 
-                onPause: () => { 
-                    isPlaying = false; gamePaused = true; document.exitPointerLock(); 
-                    document.getElementById('settings-view').style.display = 'block'; 
-                    document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
-                    document.getElementById('main-menu').style.display = 'block'; 
-                    document.getElementById('main-menu').classList.add('paused-mode'); 
-                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
-                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
-                },
-                onJump: () => {
-                    if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
-                },
-                onFire: () => { fireWeapon(); },
-                setPitch: (p) => { updateYawPitch(yaw, p); },
-                setYaw: (y) => { updateYawPitch(y, pitch); }
-            }
+            onPause: () => { 
+                isPlaying = false; gamePaused = true; 
+                if (document.exitPointerLock) document.exitPointerLock(); 
+                document.getElementById('settings-view').style.display = 'block'; 
+                document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
+                document.getElementById('main-menu').style.display = 'block'; 
+                document.getElementById('main-menu').classList.add('paused-mode'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
+            },
+            onJump: () => {
+                if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
+            },
+            onFire: () => { fireWeapon(); },
+            setPitch: (p) => { updateYawPitch(yaw, p); },
+            setYaw: (y) => { updateYawPitch(y, pitch); }
         });
         init(); 
 });
