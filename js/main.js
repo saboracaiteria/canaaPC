@@ -2077,28 +2077,43 @@ document.addEventListener('DOMContentLoaded', () => {
         function setupUI() {
             const modeBtn = document.getElementById('mode-switch-btn');
             
+            const pcIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>`;
+            const mobileIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg>`;
+
             // Initial button icon based on detection
-            if (modeBtn) modeBtn.innerText = isPC ? "💻" : "📱";
+            if (modeBtn) modeBtn.innerHTML = isPC ? pcIcon : mobileIcon;
             
-            // Sync initial HUD state (hidden by default since isPlaying=false initially)
+            // Sync initial HUD state
             syncMobileUIVisibility();
 
+            const toggleMode = (e) => {
+                if (e.cancelable) e.preventDefault();
+                isPC = !isPC; 
+                localStorage.setItem('canaan_control_mode', isPC ? 'pc' : 'mobile');
+                if (modeBtn) modeBtn.innerHTML = isPC ? pcIcon : mobileIcon; 
+                syncMobileUIVisibility();
+            };
+
             if (modeBtn) {
-                modeBtn.addEventListener('click', () => {
-                    isPC = !isPC; 
-                    localStorage.setItem('canaan_control_mode', isPC ? 'pc' : 'mobile');
-                    modeBtn.innerText = isPC ? "💻" : "📱"; 
-                    syncMobileUIVisibility();
-                });
+                modeBtn.addEventListener('click', toggleMode);
+                modeBtn.addEventListener('touchstart', toggleMode, { passive: false });
             }
 
             document.getElementById('play-btn').onclick = () => { resetGame('single'); }; 
             document.getElementById('multiplayer-btn').onclick = () => showLobby('pvp'); 
             document.getElementById('coop-btn').onclick = () => showLobby('coop');
             
-            const fsHandler = () => goFullscreen();
+            const fsHandler = (e) => {
+                if (e && e.cancelable) e.preventDefault();
+                goFullscreen();
+            };
+            
             const fsBtn = document.getElementById('fullscreen-btn');
-            if (fsBtn) fsBtn.onclick = fsHandler;
+            if (fsBtn) {
+                fsBtn.addEventListener('click', fsHandler);
+                fsBtn.addEventListener('touchstart', fsHandler, { passive: false });
+            }
+            
             const mFsBtn = document.getElementById('mobile-fs-btn');
             if (mFsBtn) mFsBtn.onclick = fsHandler;
 
