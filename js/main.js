@@ -2246,5 +2246,6 @@ document.addEventListener('DOMContentLoaded', () => {
             setPitch: (p) => { updateYawPitch(yaw, p); },
             setYaw: (y) => { updateYawPitch(y, pitch); }
         });
+        setupUI();
         init(); 
 });

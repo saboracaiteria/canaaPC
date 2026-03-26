@@ -1,0 +1,42 @@
+import os
+import sys
+
+def load_skill(skill_name):
+    # Caminho base que você forneceu
+    base_path = r"C:\Users\robso\Documents\Aplicativos\_Skill\.agent\Skills Antigravity"
+    
+    # Tenta encontrar o arquivo (ajuste a extensão se for .json ou .txt)
+    # Geralmente skills do Antigravity são .md ou .json
+    possible_extensions = ['.md', '.json', '.txt']
+    
+    skill_content = None
+    found_path = None
+
+    for ext in possible_extensions:
+        # Tenta o caminho direto: skills/nome_da_skill.md
+        path = os.path.join(base_path, f"{skill_name}{ext}")
+        if os.path.exists(path):
+            found_path = path
+            break
+        
+        # Tenta o caminho em subpasta: skills/nome_da_skill/index.md (comum em alguns repos)
+        path_sub = os.path.join(base_path, skill_name, f"index{ext}")
+        if os.path.exists(path_sub):
+            found_path = path_sub
+            break
+
+    if found_path:
+        try:
+            with open(found_path, 'r', encoding='utf-8') as f:
+                skill_content = f.read()
+            return f"--- CONTÉUDO DA SKILL {skill_name} ---\n{skill_content}"
+        except Exception as e:
+            return f"Erro ao ler a skill: {str(e)}"
+    else:
+        return f"Skill '{skill_name}' não encontrada no diretório {base_path}."
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        print(load_skill(sys.argv[1]))
+    else:
+        print("Uso: python load_skill.py <nome_da_skill>")
