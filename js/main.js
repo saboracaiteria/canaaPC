@@ -2024,7 +2024,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 setTimeout(() => btnElement.innerHTML = originalHTML, 2000); 
             } catch (e) { 
                 btnElement.innerText = "ERROR ❌"; 
-                setTimeout(() => btnElement.innerHTML = originalHTML, 2000);         function setupUI() {
+                                setTimeout(() => btnElement.innerHTML = originalHTML, 2000);
+            }
+        } catch (e) {
+            btnElement.innerText = "ERROR ❌";
+            setTimeout(() => btnElement.innerHTML = originalHTML, 2000);
+        }
+    };
+
+    function setupUI() {
             const modeBtn = document.getElementById('mode-switch-btn');
             if (modeBtn) {
                 modeBtn.innerText = isPC ? "💻" : "📱";
