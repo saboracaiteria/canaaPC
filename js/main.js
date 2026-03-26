@@ -691,6 +691,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function spawnBullet(pos, dir, isRemote = false, wpnType = 1) {
             if (!sharedMats) initSharedMaterials();
+            
+            const isSniper = wpnType === 1;
             const b = new THREE.Mesh(sharedMats.bulletGeo, isRemote ? sharedMats.bulletRemoteMat : sharedMats.bulletLocalMat); 
             const p = pos ? pos.clone() : new THREE.Vector3(); 
             const d = dir ? dir.clone() : new THREE.Vector3();
@@ -708,9 +710,18 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (!dir) { camera.getWorldDirection(d); }
             
+            // Tracer Effect
+            const tracerColor = isSniper ? 0xffdd44 : 0x00f3ff;
+            const tracerGeo = new THREE.CylinderGeometry(0.02, 0.02, isSniper ? 1.5 : 0.6, 6);
+            const tracerMat = new THREE.MeshBasicMaterial({ color: tracerColor, transparent: true, opacity: 0.6 });
+            const tracer = new THREE.Mesh(tracerGeo, tracerMat);
+            tracer.rotation.x = Math.PI / 2;
+            b.add(tracer);
+
             const backPos = p.clone().sub(d.clone().multiplyScalar(1.0)); 
             b.position.copy(p); 
-            b.userData = { velocity: d.multiplyScalar(5.0), life: 300, lastPos: backPos, isRemote: isRemote, weaponType: wpnType }; 
+            b.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), d);
+            b.userData = { velocity: d.multiplyScalar(isSniper ? 6.5 : 4.5), life: 300, lastPos: backPos, isRemote: isRemote, weaponType: wpnType }; 
             scene.add(b); 
             bullets.push(b);
         }
@@ -757,7 +768,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function createImpactEffect(point, bounceDir) {
-            const particleCount = 5; 
+            const particleCount = 10; 
             const group = new THREE.Group(); 
             group.position.copy(point); 
             group.position.add(bounceDir.clone().multiplyScalar(0.05)); 
@@ -765,11 +776,11 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const particles = []; 
             const mat = new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 1 }); 
-            const geo = new THREE.BoxGeometry(0.08, 0.08, 0.08);
+            const geo = new THREE.BoxGeometry(0.06, 0.06, 0.06);
             
             for (let i = 0; i < particleCount; i++) { 
                 const p = new THREE.Mesh(geo, mat); 
-                const dir = bounceDir.clone().add(new THREE.Vector3((Math.random() - 0.5), (Math.random() - 0.5), (Math.random() - 0.5))).normalize().multiplyScalar(Math.random() * 0.1 + 0.05); 
+                const dir = bounceDir.clone().add(new THREE.Vector3((Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5)).normalize().multiplyScalar(Math.random() * 0.15 + 0.1); 
                 group.add(p); 
                 particles.push({ mesh: p, velocity: dir }); 
             }
@@ -903,8 +914,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (hit || b.userData.life <= 0) { 
-                    scene.remove(b); 
                     bullets.splice(i, 1); 
+                    scene.remove(b); 
+                    // PERFORMANCE: Recursive disposal to clean up tracers and nested meshes
+                    b.traverse(node => {
+                        if (node.isMesh) {
+                            if (node.geometry) node.geometry.dispose();
+                            if (node.material) {
+                                if (Array.isArray(node.material)) node.material.forEach(m => m.dispose());
+                                else node.material.dispose();
+                            }
+                        }
+                    });
                 }
             }
         }
