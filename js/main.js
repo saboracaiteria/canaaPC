@@ -207,11 +207,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 btn.style.color = "#00f3ff"; 
                 levelSelectDiv.style.display = "block";
                 btn.onclick = () => { 
-                    if (lobbyPlayerCount < 2) { 
-                        logSystem("OPERADORES INSUFICIENTES (MÍN. 2)", "#ff3333");
-                        playSound('heal', settings); // Som de erro adaptado
-                        return; 
-                    }
                     currentLevel = parseInt(document.getElementById("pvp-level-select").value); 
                     const trueNow = Date.now() + serverTimeOffset; 
                     update(ref(db, `${roomPath}/state`), { gameRunning: true, level: currentLevel, endTime: trueNow + 240000, enemies: null }).catch(() => {}); 

@@ -84,6 +84,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
     currentFloor.receiveShadow = true; 
     scene.add(currentFloor);
     
+    const wallGeo = new THREE.BoxGeometry(cellSize, 6, cellSize); 
     const wallMat = new THREE.MeshStandardMaterial({ 
         map: wallTexture, 
         roughness: 0.7, 
