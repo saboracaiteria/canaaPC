@@ -18,13 +18,15 @@ export function initWorld(settings, onResize) {
     renderer.shadowMap.enabled = true; 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.1;
     document.body.appendChild(renderer.domElement); 
 
     const hemiLight = new THREE.HemisphereLight(0xffffff, 0x444444, 0.5); 
     hemiLight.position.set(0, 100, 0); 
     scene.add(hemiLight);
     
-    const sun = new THREE.DirectionalLight(0xffffff, 1.5); 
+    const sun = new THREE.DirectionalLight(0xffffff, 1.8); 
     sun.position.set(50, 100, 50); 
     sun.castShadow = true; 
     sun.shadow.mapSize.width = 2048; 
@@ -62,7 +64,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         default: wb = '#95a5a6'; fb = '#bdc3c7'; skyTop = 0x3498db; skyBot = 0xb0c4de; 
     }
     
-    scene.fog = new THREE.FogExp2(skyBot, 0.045); 
+    scene.fog = new THREE.FogExp2(skyBot, 0.04); 
     
     const wallTexture = createProTexture('bricks', wb); 
     const floorTexture = createProTexture('tiles', fb); 

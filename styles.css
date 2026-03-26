@@ -119,13 +119,13 @@
         #joystick-knob { width: 50px; height: 50px; background: rgba(0, 255, 65, 0.5); border: 2px solid #fff; box-shadow: 0 0 15px var(--canaa-green); border-radius: 50%; position: absolute; top: 35px; left: 35px; backdrop-filter: blur(3px); }
         #aim-zone { position: absolute; top: 0; right: 0; width: 80%; height: 100%; pointer-events: auto; z-index: 5; touch-action: none; }
         
-        .action-btn { position: absolute; background: rgba(15, 20, 25, 0.8); backdrop-filter: blur(10px); border: 2.5px solid var(--canaa-gold); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; pointer-events: auto; z-index: 10; box-shadow: 0 8px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(255, 215, 0, 0.15); transition: transform 0.1s, background 0.2s; touch-action: none; overflow: hidden; }
+        .action-btn { position: absolute; background: rgba(15, 20, 25, 0.8); backdrop-filter: blur(10px); border: 2.5px solid var(--canaa-gold); border-radius: 50%; color: white; display: flex; justify-content: center; align-items: center; pointer-events: auto; z-index: 10; box-shadow: 0 8px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(255, 215, 0, 0.15); transition: transform 0.08s ease-out, background 0.2s, box-shadow 0.2s; touch-action: none; overflow: hidden; }
         .action-btn svg { filter: drop-shadow(0 0 8px rgba(255,215,0,0.4)); transition: transform 0.1s; pointer-events: none; }
-        .action-btn:active { transform: scale(0.9); background: rgba(255, 215, 0, 0.4); }
+        .action-btn:active { transform: scale(0.92); filter: brightness(1.2); }
 
-        #fire-btn { bottom: 90px; right: 100px; width: 90px; height: 90px; background: rgba(184, 51, 51, 0.35); border-color: #ff3333; box-shadow: 0 0 35px rgba(255, 51, 51, 0.3); border-width: 3.5px; z-index: 15; }
+        #fire-btn { bottom: 90px; right: 100px; width: 90px; height: 90px; background: rgba(184, 51, 51, 0.25); border-color: #ff3333; box-shadow: 0 0 30px rgba(255, 51, 51, 0.2); border-width: 3.5px; z-index: 15; }
         #fire-btn svg { color: #ff3333; filter: drop-shadow(0 0 12px rgba(255,51,51,0.9)); width: 50px; height: 50px; }
-        #fire-btn:active { background: rgba(255, 51, 51, 0.6); }
+        #fire-btn:active { background: rgba(255, 51, 51, 0.5); box-shadow: 0 0 45px rgba(255, 51, 51, 0.6); }
 
         #aim-btn { bottom: 180px; right: 105px; width: 60px; height: 60px; border-color: var(--canaa-green); }
         #aim-btn svg { color: var(--canaa-green); width: 32px; height: 32px; }
@@ -142,8 +142,8 @@
         #smoke-btn { bottom: 145px; right: 190px; width: 50px; height: 50px; border-color: #aaa; box-shadow: 0 0 15px rgba(255, 255, 255, 0.2); }
         #smoke-btn svg { color: #aaa; width: 28px; height: 28px; }
 
-        #cam-toggle-btn { position: absolute; top: 15px; right: 90px; width: 48px; height: 48px; background: rgba(10, 15, 20, 0.85); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 12px; color: white; display: flex; justify-content: center; align-items: center; z-index: 15000000; pointer-events: auto; touch-action: none; box-shadow: 0 0 15px rgba(255,255,255,0.15); transition: transform 0.1s; }
-        #cam-toggle-btn:active { transform: scale(0.9); }
+        #cam-toggle-btn { position: absolute; top: 15px; right: 90px; width: 48px; height: 48px; background: rgba(10, 15, 20, 0.85); backdrop-filter: blur(8px); border: 2px solid #fff; border-radius: 12px; color: white; display: flex; justify-content: center; align-items: center; z-index: 15000000; pointer-events: auto; touch-action: none; box-shadow: 0 0 15px rgba(255,255,255,0.15); transition: transform 0.1s, background 0.2s, box-shadow 0.2s; }
+        #cam-toggle-btn:active { transform: scale(0.92); background: rgba(255, 255, 255, 0.3); box-shadow: 0 0 25px rgba(255, 255, 255, 0.4); }
         #cam-toggle-btn svg { width: 22px; height: 22px; color: #fff; }
 
         .minimap-container { border: 2px solid var(--canaa-green) !important; box-shadow: 0 0 10px var(--canaa-green); z-index: 11000001; }

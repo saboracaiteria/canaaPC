@@ -55,6 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
         let recoilAngle = 0;
         let fovKick = 0;
         let gunRecoil = 0; 
+        let shakeIntensity = 0;
+        let shakeTime = 0;
+        
+        const triggerShake = (intensity) => {
+            shakeIntensity = intensity;
+            shakeTime = 10; // Frames of shake
+        };
         
         let minimapCanvas, minimapCtx;
 
@@ -645,6 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
             muzzleFlashLight.intensity = 3; 
             setTimeout(() => muzzleFlashLight.intensity = 0, 50); 
             spawnBullet(null, null, false, currentWeapon);
+            triggerShake(currentWeapon === 1 ? 0.3 : 0.08); 
         }
 
         function checkWall(nx, nz, cx, cz, cy) {
@@ -1186,6 +1194,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     camera.position.copy(playerGroup.position).add(_v1);
                     camera.rotation.set(pitch + recoilAngle * 0.5, yaw, 0);
                 }
+
+                if (shakeTime > 0) {
+                    camera.position.x += (Math.random() - 0.5) * shakeIntensity;
+                    camera.position.y += (Math.random() - 0.5) * shakeIntensity;
+                    camera.position.z += (Math.random() - 0.5) * shakeIntensity;
+                    shakeTime--;
+                    shakeIntensity *= 0.9; 
+                }
                 
                 const speed = 0.18; 
                 _v1.copy(_vFwd).applyAxisAngle(_vUp, yaw); 
@@ -1343,6 +1359,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 o.style.boxShadow = "inset 0 0 50px 20px rgba(255,0,0,0.5)"; 
                 setTimeout(() => o.style.boxShadow = "none", 200); 
             }
+            triggerShake(0.4); 
             
             if (myRef) update(myRef, { hp: playerHP, armor: playerArmor }); 
             if (playerHP <= 0) { 
@@ -1763,6 +1780,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (playerGroup.position.distanceTo(g.mesh.position) < range) { 
                     applyDamage(50); 
+                }
+                const distToPlayer = playerGroup.position.distanceTo(g.mesh.position);
+                if (distToPlayer < range * 2) {
+                    const shakeMult = 1.0 - (distToPlayer / (range * 2));
+                    triggerShake(1.5 * shakeMult);
                 }
             }
         }
