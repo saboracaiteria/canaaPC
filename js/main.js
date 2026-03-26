@@ -62,8 +62,22 @@ document.addEventListener('DOMContentLoaded', () => {
         let playerGroup, playerMesh, gunGroup, enemies = [], bullets = [], healthKits = [], armorVests = [], grenadePacks = [];
         // world-related variables are now imported from world.js
         let score = 0, playerHP = 100, playerArmor = 0, playerLives = 5, isPlaying = false, gamePaused = false, currentLevel = 1, maxLevels = 10, lobbyPlayerCount = 0;
-        let storedMode = localStorage.getItem('canaan_control_mode');
-        let isPC = storedMode !== null ? (storedMode === 'pc') : !('ontouchstart' in window || navigator.maxTouchPoints > 0);
+        function isMobileDevice() {
+            const ua = navigator.userAgent;
+            const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+            const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+            
+            // Handle iPad Pro which sometimes reports as Macintosh but has high touch points
+            const isIPad = (navigator.platform === 'iPad' || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+            
+            const isSmallScreen = window.innerWidth <= 1366; // Increased to catch iPad Pro 12.9
+            
+            // Mobile if it has a mobile UA OR it's an iPad OR it's a small-ish screen with touch support
+            return isMobileUA || isIPad || (isTouch && isSmallScreen);
+        }
+
+        const storedMode = localStorage.getItem('canaan_control_mode');
+        let isPC = storedMode !== null ? (storedMode === 'pc') : !isMobileDevice();
         let pvpTimer = 0, pvpTimerInterval = null, isInvincible = false, invincibilityTimeout = null; 
         let levelStartTime = 0; 
         let spawnedLevel = -1; 
@@ -1232,7 +1246,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function init() {
-            isPC = !(/Android|iPhone|iPad/i.test(navigator.userAgent)); 
+            // Debug detection
+            console.log("Canaan Detection: isPC =", isPC, "isMobileDevice =", isMobileDevice(), "UA =", navigator.userAgent);
             
             initWorld(settings, onResize);
             startGameLogic();
