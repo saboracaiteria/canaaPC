@@ -904,6 +904,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function setupHUDDrag() { 
             const ids = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'minimap-canvas', 'info-panel']; 
+            
             try { 
                 const saved = JSON.parse(localStorage.getItem('canaa_hud_pos')); 
                 if (saved) { 
@@ -912,8 +913,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (el && saved[id] && saved[id].left) { 
                             el.style.left = saved[id].left; 
                             el.style.top = saved[id].top; 
-                            el.style.bottom = saved[id].bottom; 
-                            el.style.right = saved[id].right; 
+                            el.style.bottom = 'auto'; 
+                            el.style.right = 'auto'; 
                         } 
                     }); 
                 } 
@@ -921,17 +922,36 @@ document.addEventListener('DOMContentLoaded', () => {
             
             ids.forEach(id => { 
                 const el = document.getElementById(id); 
-                if (el) { 
-                    el.style.pointerEvents = 'auto'; 
-                    el.addEventListener('touchmove', (e) => { 
-                        if (!settings.isEditing) return; 
-                        const t = e.touches[0]; 
-                        el.style.left = (t.clientX - el.offsetWidth / 2) + 'px'; 
-                        el.style.top = (t.clientY - el.offsetHeight / 2) + 'px'; 
-                        el.style.bottom = 'auto'; 
-                        el.style.right = 'auto'; 
-                    }); 
-                } 
+                if (!el) return;
+                
+                el.style.pointerEvents = 'auto';
+                
+                let isDragging = false;
+                
+                const startDragging = (e) => {
+                    if (!settings.isEditing) return;
+                    isDragging = true;
+                    if (e.cancelable) e.preventDefault();
+                };
+                
+                const onDragging = (e) => {
+                    if (!isDragging || !settings.isEditing) return;
+                    const point = e.touches ? e.touches[0] : e;
+                    el.style.left = (point.clientX - el.offsetWidth / 2) + 'px'; 
+                    el.style.top = (point.clientY - el.offsetHeight / 2) + 'px'; 
+                    el.style.bottom = 'auto'; 
+                    el.style.right = 'auto'; 
+                };
+                
+                const stopDragging = () => { isDragging = false; };
+                
+                el.addEventListener('mousedown', startDragging);
+                window.addEventListener('mousemove', onDragging);
+                window.addEventListener('mouseup', stopDragging);
+                
+                el.addEventListener('touchstart', startDragging, { passive: false });
+                window.addEventListener('touchmove', onDragging, { passive: false });
+                window.addEventListener('touchend', stopDragging);
             }); 
         }
 
