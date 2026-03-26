@@ -51,25 +51,28 @@ export function createEnemyMesh(x, z, level, index, type = 'soldier') {
         index: index,
         reactionTime: Math.max(200, 1000 - (level * 150)),
         pivots: { 
-            lLeg: char.lLegPivot, 
-            rLeg: char.rLegPivot, 
-            lCanela: char.lCanelaPivot, 
-            rCanela: char.rCanelaPivot, 
-            rArm: char.rArmPivot, 
-            lArm: char.lArmPivot 
+            lLeg: char.lLegPivot || null, 
+            rLeg: char.rLegPivot || null, 
+            lCanela: char.lCanelaPivot || null, 
+            rCanela: char.rCanelaPivot || null, 
+            rArm: char.rArmPivot || null, 
+            lArm: char.lArmPivot || null 
         },
         state: 'PATROL',
         patrolPos: new THREE.Vector3(x, 0, z),
         nextPatrolTime: 0,
-        searchTimer: 0
+        searchTimer: 0,
+        ring: char.ring || null
     }; 
     
-    const wMat = new THREE.MeshStandardMaterial({ color: 0x111111 }); 
-    const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.6), wMat); 
-    gun.name = "gun"; 
-    gun.position.set(0, -0.2, 0); 
-    gun.rotation.x = -Math.PI / 2; 
-    char.rElbow.add(gun);
+    if (char.rElbow) {
+        const wMat = new THREE.MeshStandardMaterial({ color: 0x111111 }); 
+        const gun = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.15, 0.6), wMat); 
+        gun.name = "gun"; 
+        gun.position.set(0, -0.2, 0); 
+        gun.rotation.x = -Math.PI / 2; 
+        char.rElbow.add(gun);
+    }
     
     if (createHPBar) {
         const hpBar = createHPBar(); 
@@ -351,7 +354,7 @@ export function updateEnemies(dt, {
                         else { e.userData.walkCycle = 0; }
                         const wc = e.userData.walkCycle; 
                         const baseCrouch = 0.3; const baseKnee = -0.6; const legSwing = Math.sin(wc) * 0.5;
-                        if (e.userData.pivots) { 
+                        if (e.userData.pivots && e.userData.pivots.lLeg) { 
                             e.userData.pivots.lLeg.rotation.x = baseCrouch + legSwing; 
                             e.userData.pivots.lCanela.rotation.x = baseKnee - Math.abs(Math.cos(wc)) * 0.5; 
                             e.userData.pivots.rLeg.rotation.x = baseCrouch - legSwing; 
@@ -359,7 +362,7 @@ export function updateEnemies(dt, {
                         }
                     } else {
                         if (e.userData.isGrounded && Math.random() < 0.05) e.userData.velocityY = 0.25;
-                        if (e.userData.pivots) { 
+                        if (e.userData.pivots && e.userData.pivots.lLeg) { 
                             e.userData.pivots.lLeg.rotation.x = THREE.MathUtils.lerp(e.userData.pivots.lLeg.rotation.x, 0.3, 0.1); 
                             e.userData.pivots.lCanela.rotation.x = THREE.MathUtils.lerp(e.userData.pivots.lCanela.rotation.x, -0.6, 0.1); 
                             e.userData.pivots.rLeg.rotation.x = THREE.MathUtils.lerp(e.userData.pivots.rLeg.rotation.x, 0.3, 0.1); 
