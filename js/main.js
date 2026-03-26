@@ -910,6 +910,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
 
+        let activeDragEl = null;
+        let dragOffset = { x: 0, y: 0 };
+
         function setupHUDDrag() { 
             const ids = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'minimap-canvas', 'info-panel']; 
             
@@ -928,39 +931,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 } 
             } catch(e) {} 
             
-            ids.forEach(id => { 
-                const el = document.getElementById(id); 
-                if (!el) return;
-                
-                el.style.pointerEvents = 'auto';
-                
-                let isDragging = false;
-                
-                const startDragging = (e) => {
-                    if (!settings.isEditing) return;
-                    isDragging = true;
+            // Re-assign pointerEvents to auto for all HUD elements to allow dragging
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.pointerEvents = 'auto';
+                    
+                    // Remove existing to prevent duplication
+                    el.onmousedown = null;
+                    el.ontouchstart = null;
+
+                    el.onmousedown = (e) => {
+                        if (!settings.isEditing) return;
+                        activeDragEl = el;
+                        const rect = el.getBoundingClientRect();
+                        dragOffset.x = e.clientX - rect.left;
+                        dragOffset.y = e.clientY - rect.top;
+                    };
+                    el.ontouchstart = (e) => {
+                        if (!settings.isEditing) return;
+                        activeDragEl = el;
+                        const rect = el.getBoundingClientRect();
+                        const touch = e.touches[0];
+                        dragOffset.x = touch.clientX - rect.left;
+                        dragOffset.y = touch.clientY - rect.top;
+                        if (e.cancelable) e.preventDefault();
+                    };
+                }
+            });
+
+            // Global window listeners added only once (window.hudListenersAdded guard)
+            if (!window.hudListenersAdded) {
+                window.addEventListener('mousemove', (e) => {
+                    if (!activeDragEl || !settings.isEditing) return;
+                    activeDragEl.style.left = (e.clientX - dragOffset.x) + 'px';
+                    activeDragEl.style.top = (e.clientY - dragOffset.y) + 'px';
+                    activeDragEl.style.bottom = 'auto';
+                    activeDragEl.style.right = 'auto';
+                });
+                window.addEventListener('touchmove', (e) => {
+                    if (!activeDragEl || !settings.isEditing) return;
+                    const touch = e.touches[0];
+                    activeDragEl.style.left = (touch.clientX - dragOffset.x) + 'px';
+                    activeDragEl.style.top = (touch.clientY - dragOffset.y) + 'px';
+                    activeDragEl.style.bottom = 'auto';
+                    activeDragEl.style.right = 'auto';
                     if (e.cancelable) e.preventDefault();
-                };
-                
-                const onDragging = (e) => {
-                    if (!isDragging || !settings.isEditing) return;
-                    const point = e.touches ? e.touches[0] : e;
-                    el.style.left = (point.clientX - el.offsetWidth / 2) + 'px'; 
-                    el.style.top = (point.clientY - el.offsetHeight / 2) + 'px'; 
-                    el.style.bottom = 'auto'; 
-                    el.style.right = 'auto'; 
-                };
-                
-                const stopDragging = () => { isDragging = false; };
-                
-                el.addEventListener('mousedown', startDragging);
-                window.addEventListener('mousemove', onDragging);
-                window.addEventListener('mouseup', stopDragging);
-                
-                el.addEventListener('touchstart', startDragging, { passive: false });
-                window.addEventListener('touchmove', onDragging, { passive: false });
-                window.addEventListener('touchend', stopDragging);
-            }); 
+                }, { passive: false });
+                window.addEventListener('mouseup', () => { activeDragEl = null; });
+                window.addEventListener('touchend', () => { activeDragEl = null; });
+                window.hudListenersAdded = true;
+            }
         }
 
         function animate() {
@@ -2190,6 +2211,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('settings-btn').onclick = () => { 
                 document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
                 document.getElementById('settings-view').style.display = 'block'; 
+                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0');
             };
             
             const backBtnEl = document.getElementById('back-btn');
@@ -2200,6 +2222,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     document.getElementById('settings-view').style.display = 'none'; 
                     document.getElementById('start-view').style.removeProperty('display'); 
                     document.getElementById('start-view').style.display = 'flex'; 
+                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1');
                 } 
             };
             backBtnEl.onclick = null;

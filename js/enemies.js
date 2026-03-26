@@ -41,7 +41,6 @@ export function createEnemyMesh(x, z, level, index) {
         lastShot: 0,
         index: index,
         reactionTime: Math.max(200, 1000 - (level * 150)),
-        walkCycle: 0,
         pivots: { 
             lLeg: char.lLegPivot, 
             rLeg: char.rLegPivot, 
@@ -49,7 +48,11 @@ export function createEnemyMesh(x, z, level, index) {
             rCanela: char.rCanelaPivot, 
             rArm: char.rArmPivot, 
             lArm: char.lArmPivot 
-        } 
+        },
+        state: 'PATROL',
+        patrolPos: new THREE.Vector3(x, 0, z),
+        nextPatrolTime: 0,
+        searchTimer: 0
     }; 
     
     const wMat = new THREE.MeshStandardMaterial({ color: 0x111111 }); 
@@ -215,21 +218,17 @@ export function updateEnemies(dt, {
         for (let i = 0; i < enemies.length; i++) {
             const e = enemies[i]; if (!e || e.userData.dead) continue;
             
-            // OPTIMIZATION: Early distance culling against camera
+            // PERFORMANCE LOD: Varying update frequency based on distance
+            e.userData.logicFrame = (e.userData.logicFrame || 0) + 1;
             const cameraDist = camera ? camera.position.distanceToSquared(e.position) : 10000;
-            if (cameraDist > 6400) { // 80^2
-                e.visible = false;
-                if (isMultiplayerMode && isMasterClient) {
-                    if (now - (e.userData.lastSyncTime || 0) > BOT_SYNC_RATE * 2) {
-                        e.userData.lastSyncTime = now;
-                        enemyUpdates[`${e.userData.index}/x`] = parseFloat(e.position.x.toFixed(2));
-                        enemyUpdates[`${e.userData.index}/z`] = parseFloat(e.position.z.toFixed(2));
-                        hasEnemyUpdates = true;
-                    }
-                }
-                continue;
-            }
-            e.visible = true;
+            const distSq = cameraDist;
+            let skipFrame = 1;
+            if (distSq > 10000) { e.visible = false; skipFrame = 15; } // > 100m
+            else if (distSq > 3600) { e.visible = true; skipFrame = 5; } // > 60m
+            else if (distSq > 1600) { e.visible = true; skipFrame = 2; } // > 40m
+            else { e.visible = true; skipFrame = 1; } // Near
+
+            if (e.userData.logicFrame % skipFrame !== 0) continue;
 
             let bestTarget = availableTargets[0].mesh;
             let bestTargetId = availableTargets[0].id;
@@ -259,12 +258,10 @@ export function updateEnemies(dt, {
                 e.userData.lockedTargetId = bestTargetId;
             }
 
-            if (minDistSq > 10000) minDistSq = 10000;
             const d = Math.sqrt(minDistSq);
             
+            // PHYSICS: Gravity and Grounding
             e.userData.velocityY = (e.userData.velocityY || 0) - 0.015; e.position.y += e.userData.velocityY;
-            
-            // OPTIMIZATION: Throttled Grounding Raycast (Every 3 frames)
             e.userData.groundCheckFrame = (e.userData.groundCheckFrame || 0) + 1;
             if (e.userData.groundCheckFrame % 3 === 0) {
                 let botGroundY = 0; 
@@ -275,12 +272,44 @@ export function updateEnemies(dt, {
                 if (rampHits.length > 0 && rampHits[0].point.y > botGroundY) { botGroundY = rampHits[0].point.y; }
                 e.userData.lastKnownGroundY = botGroundY;
             }
-            
             const botGroundY = e.userData.lastKnownGroundY || 0;
             if (e.position.y <= botGroundY + 0.05) { e.position.y = botGroundY + 0.05; e.userData.velocityY = 0; e.userData.isGrounded = true; } else { e.userData.isGrounded = false; }
 
+            // AI STATE MACHINE LOGIC
+            const canSeeTarget = e.userData.lastHasLOS && d < 40;
+            if (canSeeTarget) {
+                e.userData.state = 'CHASE';
+                e.userData.searchTimer = 0;
+            } else if (e.userData.state === 'CHASE') {
+                e.userData.state = 'SEARCH';
+                e.userData.searchTimer = now + 4000; 
+                e.userData.lastKnownTargetPos = bestTarget.position.clone();
+            }
+
+            if (e.userData.state === 'SEARCH' && now > e.userData.searchTimer) {
+                e.userData.state = 'PATROL';
+            }
+
+            if (e.userData.state === 'PATROL' && now > e.userData.nextPatrolTime) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = 5 + Math.random() * 10;
+                e.userData.patrolPos.set(
+                    Math.max(2, Math.min(mazeSize * 5 - 2, e.position.x + Math.cos(angle) * dist)),
+                    0,
+                    Math.max(2, Math.min(mazeSize * 5 - 2, e.position.z + Math.sin(angle) * dist))
+                );
+                e.userData.nextPatrolTime = now + 5000 + Math.random() * 5000;
+            }
+
+            let moveTarget = e.userData.patrolPos;
+            if (e.userData.state === 'CHASE') moveTarget = bestTarget.position;
+            else if (e.userData.state === 'SEARCH') moveTarget = e.userData.lastKnownTargetPos;
+            
+            _enemyDir.subVectors(moveTarget, e.position); _enemyDir.y = 0; 
+            const distToMoveTarget = _enemyDir.length();
+            if (distToMoveTarget > 0.1) _enemyDir.normalize();
+
             if (d < 100) {
-                _enemyDir.subVectors(bestTarget.position, e.position); _enemyDir.y = 0; if (_enemyDir.lengthSq() > 0) _enemyDir.normalize();
                 
                 const targetYaw = Math.atan2(_enemyDir.x, _enemyDir.z) + Math.PI; e.rotation.y = THREE.MathUtils.lerp(e.rotation.y, targetYaw, 0.15); 
                 
