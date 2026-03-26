@@ -900,12 +900,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (!hit) { 
-                    const envObjects = currentFloor ? [...walls, ...ramps, currentFloor] : [...walls, ...ramps]; 
-                    const wh = bulletRaycaster.intersectObjects(envObjects, true); 
-                    if (wh.length > 0) { 
-                        hit = true; 
-                        createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
-                    } 
+                    if (envGroup) {
+                        const wh = bulletRaycaster.intersectObject(envGroup, true); 
+                        if (wh.length > 0) { 
+                            hit = true; 
+                            createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
+                        } 
+                    }
                 }
                 
                 if (hit || b.userData.life <= 0) { 

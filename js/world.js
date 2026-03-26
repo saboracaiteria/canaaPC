@@ -3,7 +3,7 @@ import { mazeSize, cellSize, mazeMap } from './constants.js';
 import { createProTexture, initSky, mulberry32, clearSceneObject } from './utils.js';
 
 export let scene, camera, renderer, skyMesh, skyUniforms;
-export let walls = [], ramps = [], currentFloor = null, worldLights = [];
+export let walls = [], ramps = [], currentFloor = null, worldLights = [], envGroup = null;
 
 export function initWorld(settings, onResize) {
     scene = new THREE.Scene();
@@ -49,6 +49,11 @@ export function initWorld(settings, onResize) {
 }
 
 export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode) {
+    if (envGroup) { scene.remove(envGroup); }
+    envGroup = new THREE.Group();
+    envGroup.name = "ENV_COLLIDER";
+    scene.add(envGroup);
+
     walls.forEach(w => clearSceneObject(scene, w)); walls = []; 
     if (currentFloor) { clearSceneObject(scene, currentFloor); currentFloor = null; } 
     ramps.forEach(r => clearSceneObject(scene, r)); ramps = []; 
@@ -83,6 +88,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
     currentFloor.position.set(47.5, 0, 47.5); 
     currentFloor.receiveShadow = true; 
     scene.add(currentFloor);
+    if (envGroup) envGroup.add(currentFloor);
     
     const wallGeo = new THREE.BoxGeometry(cellSize, 6, cellSize); 
     const wallMat = new THREE.MeshStandardMaterial({ 
@@ -161,6 +167,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         r2.receiveShadow = true; 
         scene.add(r2); 
         ramps.push(r2); 
+        if (envGroup) envGroup.add(r2);
         
         const r3 = new THREE.Mesh(rampGeo, rampMat); 
         r3.position.set(45, 0, 15); 
@@ -168,6 +175,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         r3.receiveShadow = true; 
         scene.add(r3); 
         ramps.push(r3); 
+        if (envGroup) envGroup.add(r3);
         
         const r4 = new THREE.Mesh(rampGeo, rampMat); 
         r4.position.set(55, 0, 85); 
@@ -176,6 +184,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         r4.receiveShadow = true; 
         scene.add(r4); 
         ramps.push(r4); 
+        if (envGroup) envGroup.add(r4);
         
         const r5 = new THREE.Mesh(rampGeo, rampMat); 
         r5.position.set(85, 0, 25); 
@@ -184,6 +193,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         r5.receiveShadow = true; 
         scene.add(r5); 
         ramps.push(r5); 
+        if (envGroup) envGroup.add(r5);
         
         const r6 = new THREE.Mesh(rampGeo, rampMat); 
         r6.position.set(15, 0, 75); 
@@ -192,6 +202,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         r6.receiveShadow = true; 
         scene.add(r6); 
         ramps.push(r6); 
+        if (envGroup) envGroup.add(r6);
     }
     
     for (let i = 0; i < mazeSize; i++) { 
@@ -221,6 +232,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
                 w.receiveShadow = true; 
                 scene.add(w); 
                 walls.push(w); 
+                if (envGroup) envGroup.add(w);
             } 
         } 
     }
@@ -243,6 +255,7 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         base.receiveShadow = true;
         scene.add(base);
         walls.push(base); 
+        if (envGroup) envGroup.add(base);
 
         const lampGeo = new THREE.CylinderGeometry(cellSize * 0.5, cellSize * 0.5, 2.5, 8);
         const lampMat = new THREE.MeshStandardMaterial({
@@ -267,4 +280,9 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         roof.position.set(corner.x * cellSize, lampY + 1.25 + 1.5, corner.z * cellSize);
         scene.add(roof);
     });
+
+    // FINAL COLLISION SYNC: Ensure ALL physical objects are in the envGroup for bullet collisions
+    walls.forEach(w => { if (envGroup && !envGroup.children.includes(w)) envGroup.add(w); });
+    ramps.forEach(r => { if (envGroup && !envGroup.children.includes(r)) envGroup.add(r); });
+    if (currentFloor && envGroup && !envGroup.children.includes(currentFloor)) envGroup.add(currentFloor);
 }
