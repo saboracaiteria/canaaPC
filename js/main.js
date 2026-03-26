@@ -26,7 +26,8 @@ import {
     createEnemyMesh, createRemotePlayerMesh, spawnEnemies, killEnemyLocal, updateEnemies 
 } from './enemies.js';
 import { 
-    initInput, resetInput, updateYawPitch, keyState, moveInput, yaw, pitch, isManualFiring, isAiming 
+    initInput, resetInput, updateYawPitch, keyState, moveInput, yaw, pitch, isManualFiring, isAiming,
+    isChargingGrenade, chargingGrenadeType, grenadeChargeStartTime
 } from './input.js';
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -2035,9 +2036,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 modeBtn.onclick = () => { 
                     isPC = !isPC; 
                     modeBtn.innerText = isPC ? "💻" : "📱"; 
-                    if (isPlaying) { 
-                        document.getElementById('mobile-ui').style.display = isPC ? 'none' : 'block'; 
-                    } 
+                    // Mostra ou esconde UI Mobile independentemente de estar jogando agora
+                    const mUI = document.getElementById('mobile-ui');
+                    if (mUI) mUI.style.display = isPC ? 'none' : 'block';
                 };
             }
 

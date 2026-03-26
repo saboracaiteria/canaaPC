@@ -204,6 +204,45 @@ function setupMobileControls(callbacks) {
     document.getElementById('cam-toggle-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleCameraModeRef(); }, { passive: false }); 
     document.getElementById('swap-btn').addEventListener('touchstart', (e) => { e.preventDefault(); toggleWeaponRef(); }, { passive: false }); 
 
+    // Granadas e Fumos Mobile
+    const gb = document.getElementById('grenade-btn');
+    if (gb) {
+        gb.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(!isChargingGrenade) {
+                isChargingGrenade = true;
+                chargingGrenadeType = 'explosive';
+                grenadeChargeStartTime = performance.now();
+            }
+        }, { passive: false });
+        gb.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isChargingGrenade && chargingGrenadeType === 'explosive') {
+                executeGrenadeThrowRef();
+                isChargingGrenade = false;
+            }
+        });
+    }
+
+    const sb = document.getElementById('smoke-btn');
+    if (sb) {
+        sb.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            if(!isChargingGrenade) {
+                isChargingGrenade = true;
+                chargingGrenadeType = 'smoke';
+                grenadeChargeStartTime = performance.now();
+            }
+        }, { passive: false });
+        sb.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            if (isChargingGrenade && chargingGrenadeType === 'smoke') {
+                executeGrenadeThrowRef();
+                isChargingGrenade = false;
+            }
+        });
+    }
+
     // Preveni o menu de contexto em todos os botões para não travar o jogo
     ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'cam-toggle-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'aim-zone'].forEach(id => {
         const el = document.getElementById(id);
