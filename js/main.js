@@ -1950,7 +1950,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (pl) pl.catch(() => {}); 
                     } catch(e){} 
                 } 
-                if (!isPC) document.getElementById('mobile-ui').style.display = 'block'; 
+                syncMobileUIVisibility();
             } catch (e) { 
                 console.error("Fatal Engine Error:", e);
                 logSystem("Fatal error: " + e.message, "error"); 
@@ -1963,7 +1963,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.exitPointerLock(); 
             if (bgmPlayer) bgmPlayer.pause(); 
             document.getElementById('game-over-screen').style.display = 'flex'; 
-            document.getElementById('mobile-ui').style.display = 'none'; 
+            syncMobileUIVisibility();
             document.getElementById('pause-btn').style.display = 'none'; 
         }
 
@@ -1979,7 +1979,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if(pEl) pEl.innerText = 'You conquered all 10 levels! Mission accomplished successfully!'; 
                     winScreen.style.display = 'flex'; 
                 } 
-                document.getElementById('mobile-ui').style.display = 'none'; 
+                syncMobileUIVisibility();
                 return; 
             } 
             currentLevel++; 
@@ -1994,7 +1994,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('main-menu').style.display = 'none'; 
             document.getElementById('hud').style.display = 'block'; 
             document.getElementById('crosshair').style.display = 'block'; 
-            if (!isPC) document.getElementById('mobile-ui').style.display = 'block'; 
+            syncMobileUIVisibility();
             document.getElementById('main-menu').classList.remove('paused-mode'); 
             document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1'); 
             document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'auto'); 
@@ -2045,23 +2045,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
+        function syncMobileUIVisibility() {
+            const mUI = document.getElementById('mobile-ui');
+            if (mUI) {
+                // Show mobile UI only if in mobile mode AND game is active
+                mUI.style.display = (!isPC && isPlaying) ? 'block' : 'none';
+                if (mUI.style.display === 'block') window.dispatchEvent(new Event('resize'));
+            }
+        }
+
         function setupUI() {
             const modeBtn = document.getElementById('mode-switch-btn');
-            const mUI = document.getElementById('mobile-ui');
             
-            // Initial state sync
+            // Initial button icon based on detection
             if (modeBtn) modeBtn.innerText = isPC ? "💻" : "📱";
-            if (mUI) mUI.style.display = isPC ? 'none' : 'block';
+            
+            // Sync initial HUD state (hidden by default since isPlaying=false initially)
+            syncMobileUIVisibility();
 
             if (modeBtn) {
                 modeBtn.addEventListener('click', () => {
                     isPC = !isPC; 
                     localStorage.setItem('canaan_control_mode', isPC ? 'pc' : 'mobile');
                     modeBtn.innerText = isPC ? "💻" : "📱"; 
-                    if (mUI) {
-                        mUI.style.display = isPC ? 'none' : 'block';
-                        window.dispatchEvent(new Event('resize'));
-                    }
+                    syncMobileUIVisibility();
                 });
             }
 
