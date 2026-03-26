@@ -169,3 +169,29 @@ export function createHPBar() {
     
     return { group, fg, fgMat }; 
 }
+
+export function createDroneMesh(color = 0x0088ff) {
+    const group = new THREE.Group();
+    const bodyGeo = new THREE.SphereGeometry(0.3, 8, 8);
+    const bodyMat = new THREE.MeshStandardMaterial({ color: color, metalness: 0.8, roughness: 0.2 });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    group.add(body);
+
+    const ringGeo = new THREE.TorusGeometry(0.5, 0.05, 8, 24);
+    const ringMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    const ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.rotation.x = Math.PI / 2;
+    group.add(ring);
+
+    const eyeGeo = new THREE.SphereGeometry(0.1, 8, 8);
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const eye = new THREE.Mesh(eyeGeo, eyeMat);
+    eye.position.set(0, 0, -0.25);
+    group.add(eye);
+
+    const glow = new THREE.PointLight(0xff0000, 1, 2);
+    glow.position.copy(eye.position);
+    group.add(glow);
+
+    return { group, body, ring, eye };
+}

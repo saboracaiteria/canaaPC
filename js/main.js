@@ -2233,6 +2233,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
                 document.getElementById('settings-view').style.display = 'block'; 
                 document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0');
+                if (document.getElementById('skin-select')) {
+                    document.getElementById('skin-select').value = settings.skin || 'ninja';
+                }
             };
             
             const backBtnEl = document.getElementById('back-btn');
@@ -2376,5 +2379,26 @@ document.addEventListener('DOMContentLoaded', () => {
             setYaw: (y) => { updateYawPitch(y, pitch); }
         });
         setupUI();
-        init(); 
-});
+        init();
+
+        const skinSelect = document.getElementById('skin-select');
+        if (skinSelect) {
+            skinSelect.onchange = (e) => {
+                settings.skin = e.target.value;
+                if (playerMeshParts) {
+                    const s = settings.skin;
+                    let tc = 0x222222, vc = 0x2F4F2F, sc = 0xffdbac;
+                    if (s === 'ninja') { tc = 0x050505; vc = 0x111111; sc = 0xdddddd; }
+                    else if (s === 'desert') { tc = 0x8b4513; vc = 0xd2b48c; sc = 0xffe4b5; }
+                    else if (s === 'frozen') { tc = 0x004488; vc = 0x0088ff; sc = 0xccffff; }
+                    else if (s === 'gold') { tc = 0x443300; vc = 0xffd700; sc = 0xffeeaa; }
+                    
+                    playerMeshParts.torso.material.color.setHex(tc);
+                    playerMeshParts.vest.material.color.setHex(vc);
+                    playerMeshParts.head.material.color.setHex(sc);
+                    playerMeshParts.rForearm.material.color.setHex(sc);
+                    playerMeshParts.lForearm.material.color.setHex(sc);
+                }
+            };
+        }
+    });

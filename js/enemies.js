@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { mazeSize, mazeMap } from './constants.js';
 import { clearSceneObject, mulberry32, playSound } from './utils.js';
-import { createHumanoidMesh, createHPBar } from './graphics.js';
+import { createHumanoidMesh, createHPBar, createDroneMesh } from './graphics.js';
 import { ref, update } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-database.js';
 
 const _v1 = new THREE.Vector3();
@@ -23,20 +23,29 @@ function initSharedMaterials() {
     };
 }
 
-export function createEnemyMesh(x, z, level, index) {
-    const char = createHumanoidMesh({
-        torsoColor: level === 5 ? 0x442200 : 0x222200,
-        vestColor: level === 5 ? 0xff00ff : 0xff3333,
-        skinColor: 0xffdbac,
-        isEnemy: true
-    });
+export function createEnemyMesh(x, z, level, index, type = 'soldier') {
+    let char;
+    if (type === 'drone') {
+        char = createDroneMesh(level === 5 ? 0xff0000 : 0x0088ff);
+    } else {
+        char = createHumanoidMesh({
+            torsoColor: level === 5 ? 0x442200 : 0x222200,
+            vestColor: level === 5 ? 0xff00ff : 0xff3333,
+            skinColor: 0xffdbac,
+            isEnemy: true
+        });
+    }
     
     const group = char.group;
-    group.position.set(x, 0, z);
+    const isBoss = (type === 'boss' || level === 5);
+    group.position.set(x, isBoss ? 0 : (type === 'drone' ? 3 : 0), z);
+    if (isBoss) group.scale.set(1.5, 1.5, 1.5);
+    
     group.userData = { 
         isEnemyRoot: true, 
-        hp: 100, 
-        maxHp: 100,
+        type: type,
+        hp: isBoss ? 500 : 100, 
+        maxHp: isBoss ? 500 : 100,
         dead: false, 
         lastShot: 0,
         index: index,
@@ -163,10 +172,11 @@ export function spawnEnemies(count, level, { scene, walls, playerGroup, remotePl
             
             if (!insideWall) valid = true;
         }
-        const enemy = createEnemyMesh(px, pz, level, i); 
+        const type = (i === 0 && level >= 3) ? 'boss' : (rng() < 0.3 ? 'drone' : 'soldier');
+        const enemy = createEnemyMesh(px, pz, level, i, type); 
         spawnedEnemies.push(enemy); 
         scene.add(enemy); 
-        enemyData[i] = { x: px, z: pz, rot: 0, hp: ehp, dead: false };
+        enemyData[i] = { x: px, z: pz, rot: 0, hp: ehp, dead: false, type: type };
     }
     
     if (isMultiplayerMode && isMasterClient) { 
@@ -273,7 +283,16 @@ export function updateEnemies(dt, {
                 e.userData.lastKnownGroundY = botGroundY;
             }
             const botGroundY = e.userData.lastKnownGroundY || 0;
-            if (e.position.y <= botGroundY + 0.05) { e.position.y = botGroundY + 0.05; e.userData.velocityY = 0; e.userData.isGrounded = true; } else { e.userData.isGrounded = false; }
+            const isDrone = e.userData.type === 'drone';
+            
+            if (isDrone) {
+                const hoverY = botGroundY + 3.0 + Math.sin(now * 0.005) * 0.5;
+                e.position.y = THREE.MathUtils.lerp(e.position.y, hoverY, 0.1);
+                e.userData.isGrounded = true;
+                if (e.userData.ring) e.userData.ring.rotation.z += 0.2;
+            } else {
+                if (e.position.y <= botGroundY + 0.05) { e.position.y = botGroundY + 0.05; e.userData.velocityY = 0; e.userData.isGrounded = true; } else { e.userData.isGrounded = false; }
+            }
 
             // AI STATE MACHINE LOGIC
             const canSeeTarget = e.userData.lastHasLOS && d < 40;

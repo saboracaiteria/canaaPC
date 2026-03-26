@@ -56,15 +56,19 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
     let wb, fb, skyTop, skyBot;
     
     switch (level) { 
-        case 1: wb = '#6c7a89'; fb = '#95a5a6'; skyTop = 0x3498db; skyBot = 0xb0c4de; break; 
-        case 2: wb = '#d35400'; fb = '#e67e22'; skyTop = 0xdb8334; skyBot = 0xf39c12; break; 
-        case 3: wb = '#2c3e50'; fb = '#34495e'; skyTop = 0x000000; skyBot = 0x1c2833; break; 
-        case 4: wb = '#c0392b'; fb = '#e74c3c'; skyTop = 0x922b21; skyBot = 0xd98880; break; 
-        case 5: wb = '#8e44ad'; fb = '#9b59b6'; skyTop = 0x5b2c6f; skyBot = 0xaf7ac5; break; 
+        case 1: wb = '#6c7a89'; fb = '#95a5a6'; skyTop = 0x3498db; skyBot = 0xb0c4de; break; // Urban
+        case 2: wb = '#d35400'; fb = '#e67e22'; skyTop = 0xdb8334; skyBot = 0xf39c12; break; // Desert
+        case 3: wb = '#1a1a1a'; fb = '#0a0a0a'; skyTop = 0x5b2c6f; skyBot = 0x0a0a0a; break; // Cyberpunk
+        case 4: wb = '#143d14'; fb = '#0b2e0b'; skyTop = 0x1b4d3e; skyBot = 0x143d14; break; // Jungle
+        case 5: wb = '#330033'; fb = '#110011'; skyTop = 0x000000; skyBot = 0xff00ff; break; // Alien Abyss
         default: wb = '#95a5a6'; fb = '#bdc3c7'; skyTop = 0x3498db; skyBot = 0xb0c4de; 
     }
     
-    scene.fog = new THREE.FogExp2(skyBot, 0.04); 
+    if (level === 3 || level === 5) {
+        scene.fog = new THREE.FogExp2(skyBot, 0.06);
+    } else {
+        scene.fog = new THREE.FogExp2(skyBot, 0.04); 
+    }
     
     const wallTexture = createProTexture('bricks', wb); 
     const floorTexture = createProTexture('tiles', fb); 
@@ -80,8 +84,13 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
     currentFloor.receiveShadow = true; 
     scene.add(currentFloor);
     
-    const wallGeo = new THREE.BoxGeometry(cellSize, 6, cellSize); 
-    const wallMat = new THREE.MeshStandardMaterial({ map: wallTexture, roughness: 0.7, metalness: 0.1 }); 
+    const wallMat = new THREE.MeshStandardMaterial({ 
+        map: wallTexture, 
+        roughness: 0.7, 
+        metalness: level >= 3 ? 0.8 : 0.1,
+        emissive: level === 3 ? 0x00ff41 : (level === 5 ? 0xff00ff : 0x000000),
+        emissiveIntensity: 0.05
+    }); 
     const isPVP = isMultiplayerMode && !isCoopMode; 
     const isOpenLevel = isPVP; 
     const longWallGeo = new THREE.BoxGeometry(cellSize, 6, cellSize * 3); 
