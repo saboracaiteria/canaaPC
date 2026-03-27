@@ -89,9 +89,30 @@ export function addEyes(headMesh) {
 }
 
 let audioCtx = null;
+const audioBuffers = {};
+
 export function initAudio() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+        preloadSounds();
+    }
     return audioCtx;
+}
+
+async function preloadSounds() {
+    const sounds = {
+        'shoot': 'sons/tiro.mp3'
+    };
+    
+    for (const [name, url] of Object.entries(sounds)) {
+        try {
+            const response = await fetch(url);
+            const arrayBuffer = await response.arrayBuffer();
+            audioBuffers[name] = await audioCtx.decodeAudioData(arrayBuffer);
+        } catch (e) {
+            console.warn(`Failed to load sound: ${name}`);
+        }
+    }
 }
 
 export function resumeAudio() {
@@ -100,36 +121,82 @@ export function resumeAudio() {
     }
 }
 
-const soundCache = { shoot: new Audio('sons/tiro.mp3') };
-// Silenciar erros de carregamento inicial
-Object.values(soundCache).forEach(a => a.addEventListener('error', () => {}));
-
 export function playSound(type, settings) {
+    if (!audioCtx || audioCtx.state === 'suspended') return;
+    
     try {
-        const ctx = initAudio();
-        const osc = ctx.createOscillator(), gain = ctx.createGain(), now = ctx.currentTime, vol = settings.volume;
-        osc.connect(gain);
-        gain.connect(ctx.destination);
+        const now = audioCtx.currentTime;
+        const vol = settings.volume || 1.0;
 
-        if (type === 'shoot') {
-            const audio = soundCache.shoot.cloneNode();
-            audio.volume = settings.volume;
-            audio.play().catch(() => { });
-        } else if (type === 'jump') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(200, now); osc.frequency.linearRampToValueAtTime(400, now + 0.2);
-            gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.linearRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now); osc.stop(now + 0.2);
-        } else if (type === 'step') {
-            osc.type = 'triangle'; osc.frequency.setValueAtTime(100, now);
-            gain.gain.setValueAtTime(0.2 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
-            osc.start(now); osc.stop(now + 0.05);
-        } else if (type === 'heal') {
-            osc.type = 'sine'; osc.frequency.setValueAtTime(600, now); osc.frequency.linearRampToValueAtTime(1200, now + 0.1);
-            gain.gain.setValueAtTime(0.3 * vol, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-            osc.start(now); osc.stop(now + 0.3);
+        if (type === 'shoot' && audioBuffers['shoot']) {
+            const source = audioCtx.createBufferSource();
+            const gainNode = audioCtx.createGain();
+            source.buffer = audioBuffers['shoot'];
+            gainNode.gain.setValueAtTime(vol * 0.8, now);
+            source.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            source.start(now);
+        } else {
+            // Procedural sounds using Oscillators (Ultra-fast, no memory overhead)
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'jump') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(300, now + 0.15);
+                gain.gain.setValueAtTime(0.2 * vol, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now); osc.stop(now + 0.15);
+            } else if (type === 'step') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(60, now);
+                osc.frequency.exponentialRampToValueAtTime(30, now + 0.05);
+                gain.gain.setValueAtTime(0.15 * vol, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.05);
+                osc.start(now); osc.stop(now + 0.05);
+            } else if (type === 'heal') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(880, now + 0.3);
+                gain.gain.setValueAtTime(0.3 * vol, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(100, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.1);
+                gain.gain.setValueAtTime(0.4 * vol, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
+                osc.start(now); osc.stop(now + 0.1);
+            } else if (type === 'kill') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.exponentialRampToValueAtTime(50, now + 0.3);
+                gain.gain.setValueAtTime(0.5 * vol, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now); osc.stop(now + 0.3);
+            } else if (type === 'win') {
+                osc.type = 'triangle';
+                [440, 554, 659, 880].forEach((f, i) => {
+                    osc.frequency.setValueAtTime(f, now + i * 0.1);
+                });
+                gain.gain.setValueAtTime(0.3 * vol, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.5);
+                osc.start(now); osc.stop(now + 0.5);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(200, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.8);
+                gain.gain.setValueAtTime(0.4 * vol, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.8);
+                osc.start(now); osc.stop(now + 0.8);
+            }
         }
     } catch (e) {
-        // Ignorar erros de áudio se o contexto ou arquivo falhar
+        // Audio error silent fallback
     }
 }
 

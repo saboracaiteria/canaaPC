@@ -864,18 +864,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 if (isMultiplayerMode && !isCoopMode) {
                     const targets = [];
-            for (const key in remotePlayers) {
-                if (remotePlayers[key].mesh) targets.push(remotePlayers[key].mesh);
-            } 
-                    const hits = bulletRaycaster.intersectObjects(targets, true);
-                    if (hits.length > 0) {
-                        let o = hits[0].object; 
-                        while (o && o.parent && (!o.userData || !o.userData.id)) o = o.parent;
-                        if (o.userData && o.userData.id) { 
-                            if (remotePlayers[o.userData.id] && remotePlayers[o.userData.id].invincible) { hit = true; }
-                            else {
+                    for (const key in remotePlayers) {
+                        const r = remotePlayers[key];
+                        if (r.mesh && !r.invincible) {
+                            // PERFORMANCE LAG FIX 2: Check Distance before Raycast
+                            const distToBot = b.position.distanceToSquared(r.mesh.position);
+                            if (distToBot < 100) targets.push(r.mesh); // Only raycast if within 10m
+                        }
+                    } 
+                    
+                    if (targets.length > 0) {
+                        const hits = bulletRaycaster.intersectObjects(targets, true);
+                        if (hits.length > 0) {
+                            let o = hits[0].object; 
+                            while (o && o.parent && (!o.userData || !o.userData.id)) o = o.parent;
+                            if (o.userData && o.userData.id) { 
                                 hit = true; 
                                 triggerHitMarker(); 
+                                playSound('hit', settings); // Som de impacto em PvP (opcional, hitmarker)
                                 createBloodEffect(hits[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize());
                                 const targetId = o.userData.id; 
                                 const dmg = b.userData.weaponType === 1 ? 70 : 10; 
@@ -885,7 +891,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     return 0; 
                                 }).then((result) => { 
                                     if (result.committed && result.snapshot.val() === 0) { 
-                                        if (!isCoopMode) registerKill(); 
+                                        if (!isCoopMode) { registerKill(); playSound('kill', settings); }
                                     } 
                                 }).catch(() => {});
                             }
@@ -894,15 +900,23 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (!hit) {
-                    // FIX LAG 1: Filtra apenas os bots VIVOS. Ignorar cadáveres poupa milhares de cálculos ao Android!
+                    // PERFORMANCE LAG FIX 1: Filter Alive only
                     const aliveEnemies = enemies.filter(e => !e.userData.dead);
-                    const hits = bulletRaycaster.intersectObjects(aliveEnemies, true); 
+                    
+                    // PERFORMANCE LAG FIX 2: Proximal check for AI
+                    const targetsAI = [];
+                    for (let e of aliveEnemies) {
+                        const dSq = b.position.distanceToSquared(e.position);
+                        if (dSq < (isSniper ? 200 : 100)) targetsAI.push(e);
+                    }
+
+                    const hits = bulletRaycaster.intersectObjects(targetsAI, true); 
                     
                     let volumeHit = null;
                     if (b.userData.life > 295) { 
-                        for (let e of aliveEnemies) { 
-                            const dist = b.position.distanceTo(e.position); 
-                            if (dist < 1.5) { volumeHit = e; break; } 
+                        for (let e of targetsAI) { 
+                            const distSq = b.position.distanceToSquared(e.position); 
+                            if (distSq < 2.25) { volumeHit = e; break; } 
                         } 
                     }
                     
@@ -917,6 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const dmg = b.userData.weaponType === 1 ? 100 : 15; 
                             hit = true; 
                             triggerHitMarker();
+                            playSound('hit', settings); // Feedback sonoro tático
                             const hitPoint = (hits.length > 0 && hits[0].point) ? hits[0].point : b.position.clone(); 
                             createBloodEffect(hitPoint, b.userData.velocity.clone().multiplyScalar(-1).normalize());
                             
@@ -927,26 +942,29 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }).then((res) => { 
                                     const val = res.snapshot.val(); 
                                     if (res.committed && val && val.dead && !o.userData.dead) { 
-                                        killEnemyLocal(o, { dbUpdate: false, isMultiplayerMode, isCoopMode, registerKill, registerTeamKill, db, roomPath }); 
-                                        if (isCoopMode) registerTeamKill(); 
-                                        else registerKill(); 
+                                        killEnemyLocal(o, { dbUpdate: false, isMultiplayerMode, isCoopMode, registerKill, registerTeamKill: mpRegisterTeamKill, db, roomPath, settings }); 
+                                        if (isCoopMode) mpRegisterTeamKill(); // Corrigido registerTeamKill aqui
+                                        else mpRegisterKill(); 
                                     } 
                                 }).catch(() => {}); 
                             } else { 
                                 o.userData.hp -= dmg; 
-                                if (o.userData.hp <= 0) killEnemyLocal(o, { dbUpdate: true, isMultiplayerMode, isCoopMode, registerKill, registerTeamKill, db, roomPath }); 
+                                if (o.userData.hp <= 0) {
+                                    killEnemyLocal(o, { dbUpdate: true, isMultiplayerMode, isCoopMode, registerKill: () => { score+=100; if(document.getElementById('score')) document.getElementById('score').innerText=score; }, registerTeamKill: () => {}, db, roomPath, settings });
+                                }
                             }
                         }
                     }
                 }
                 
-                    if (envStaticNodes) {
-                        const wh = bulletRaycaster.intersectObjects(envStaticNodes, true); 
-                        if (wh.length > 0) { 
-                            hit = true; 
-                            createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
-                        } 
-                    }
+                if (!hit && envStaticNodes) {
+                    // Check walls ONLY if no enemy hit
+                    const wh = bulletRaycaster.intersectObjects(envStaticNodes, true); 
+                    if (wh.length > 0) { 
+                        hit = true; 
+                        createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
+                    } 
+                }
                 
                 if (hit || b.userData.life <= 0) { 
                     bullets.splice(i, 1); 
@@ -1438,6 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (myRef) update(myRef, { hp: playerHP, armor: playerArmor }); 
             if (playerHP <= 0) { 
+                playSound('lose', settings); // Feedback de derrota
                 if (isCoopMode) respawnPvP(); 
                 else showGameOver(); 
             }
@@ -1970,7 +1989,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateYawPitch(0, 0); 
                 if (resetInput) resetInput(); 
                 velocityY = 0; isGrounded = true; 
-                camera.rotation.set(0, 0, 0);
+                if (camera) camera.rotation.set(0, 0, 0);
                 
                 if (!isMultiplayerMode || isCoopMode) { score = 0; }
                 
@@ -2092,6 +2111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function nextLevel() { 
+            playSound('win', settings); // Feedback de vitória/avanço
             if (currentLevel >= maxLevels) { 
                 isPlaying = false; 
                 document.exitPointerLock(); 
@@ -2214,46 +2234,42 @@ document.addEventListener('DOMContentLoaded', () => {
                 modeBtn.addEventListener('click', toggleMode);
                 modeBtn.addEventListener('touchstart', toggleMode, { passive: false });
             }
+            const setClick = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
+            const safeAdd = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
 
-            document.getElementById('play-btn').onclick = () => { resetGame('single'); }; 
-            document.getElementById('multiplayer-btn').onclick = () => showLobby('pvp'); 
-            document.getElementById('coop-btn').onclick = () => showLobby('coop');
+            setClick('play-btn', () => { resetGame('single'); }); 
+            setClick('multiplayer-btn', () => showLobby('pvp')); 
+            setClick('coop-btn', () => showLobby('coop'));
             
             const fsHandler = (e) => {
                 if (e && e.cancelable) e.preventDefault();
                 goFullscreen();
             };
             
-            const fsBtn = document.getElementById('fullscreen-btn');
-            if (fsBtn) {
-                fsBtn.addEventListener('click', fsHandler);
-                fsBtn.addEventListener('touchstart', fsHandler, { passive: false });
-            }
+            safeAdd('fullscreen-btn', 'click', fsHandler);
+            safeAdd('fullscreen-btn', 'touchstart', fsHandler, { passive: false });
+            setClick('mobile-fs-btn', fsHandler);
+
+            setClick('mobile-exit-btn', () => {
+                window.close();
+                setTimeout(() => window.location.href = "about:blank", 100);
+            });
+
+            setClick('invite-btn', () => inviteAction(document.getElementById('invite-btn'))); 
             
-            const mFsBtn = document.getElementById('mobile-fs-btn');
-            if (mFsBtn) mFsBtn.onclick = fsHandler;
-
-            const exitBtn = document.getElementById('mobile-exit-btn');
-            if (exitBtn) {
-                exitBtn.onclick = () => {
-                    window.close();
-                    setTimeout(() => window.location.href = "about:blank", 100);
-                };
-            }
-
-            const inviteBtn = document.getElementById('invite-btn'); 
-            if (inviteBtn) inviteBtn.onclick = () => inviteAction(inviteBtn); 
             const pauseInviteBtn = document.getElementById('pause-invite-btn'); 
             if (pauseInviteBtn) {
                 pauseInviteBtn.addEventListener('click', () => inviteAction(pauseInviteBtn));
                 pauseInviteBtn.addEventListener('touchstart', (e) => { e.preventDefault(); inviteAction(pauseInviteBtn); }, { passive: false });
             }
             
-            document.getElementById('lobby-back-btn').onclick = () => {  
-                document.getElementById('lobby-screen').style.display = 'none'; 
-                document.getElementById('start-view').style.removeProperty('display'); 
-                document.getElementById('start-view').style.display = 'flex'; 
-            };
+            setClick('lobby-back-btn', () => {  
+                const ls = document.getElementById('lobby-screen'); if (ls) ls.style.display = 'none'; 
+                const sv = document.getElementById('start-view'); if (sv) {
+                    sv.style.removeProperty('display'); 
+                    sv.style.display = 'flex';
+                }
+            });
             
             const pauseBtnEl = document.getElementById('pause-btn');
             const pauseGameHandler = (e) => { 
@@ -2261,14 +2277,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e && e.type === 'touchstart' && e.cancelable) e.preventDefault();
                 if (gamePaused) { resumeGame(); return; }
                 if (!isPlaying && !gamePaused) return; 
-
-                isPlaying = false; 
-                gamePaused = true; 
+                isPlaying = false; gamePaused = true; 
                 if (document.exitPointerLock) document.exitPointerLock(); 
-                document.getElementById('start-view').style.display = 'none'; 
-                document.getElementById('settings-view').style.display = 'flex'; 
-                document.getElementById('main-menu').style.display = 'flex'; 
-                document.getElementById('main-menu').classList.add('paused-mode'); 
+                const sv = document.getElementById('start-view'); if (sv) sv.style.display = 'none'; 
+                const stv = document.getElementById('settings-view'); if (stv) stv.style.display = 'flex'; 
+                const mm = document.getElementById('main-menu'); if (mm) { mm.style.display = 'flex'; mm.classList.add('paused-mode'); }
                 syncMobileUIVisibility();
             };
             if (pauseBtnEl) {
@@ -2286,127 +2299,111 @@ document.addEventListener('DOMContentLoaded', () => {
                 camBtnEl.addEventListener('touchstart', toggleCamHandler, { passive: false });
             }
             
-            document.getElementById('main-menu').addEventListener('click', (e) => { 
-                if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
-            });
-            document.getElementById('main-menu').addEventListener('touchstart', (e) => { 
-                if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
-            }, { passive: true });
+            const mmEl = document.getElementById('main-menu');
+            if (mmEl) {
+                mmEl.addEventListener('click', (e) => { 
+                    if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
+                });
+                mmEl.addEventListener('touchstart', (e) => { 
+                    if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
+                }, { passive: true });
+            }
             
-            document.getElementById('settings-btn').onclick = () => { 
-                document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
-                document.getElementById('settings-view').style.display = 'block'; 
+            setClick('settings-btn', () => { 
+                const sv = document.getElementById('start-view'); if (sv) sv.style.setProperty('display', 'none', 'important'); 
+                const stv = document.getElementById('settings-view'); if (stv) stv.style.display = 'block'; 
                 document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0');
-                if (document.getElementById('skin-select')) {
-                    document.getElementById('skin-select').value = settings.skin || 'ninja';
-                }
-            };
+                const ss = document.getElementById('skin-select'); if (ss) ss.value = settings.skin || 'ninja';
+            });
             
             const backBtnEl = document.getElementById('back-btn');
             const backBtnHandler = (e) => { 
                 if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
                 if (gamePaused) { resumeGame(); } 
                 else { 
-                    document.getElementById('settings-view').style.display = 'none'; 
-                    document.getElementById('start-view').style.removeProperty('display'); 
-                    document.getElementById('start-view').style.display = 'flex'; 
+                    const stv = document.getElementById('settings-view'); if (stv) stv.style.display = 'none'; 
+                    const sv = document.getElementById('start-view'); if (sv) {
+                        sv.style.removeProperty('display'); 
+                        sv.style.display = 'flex';
+                    }
                     document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1');
                 } 
             };
-            backBtnEl.onclick = null;
-            backBtnEl.addEventListener('click', backBtnHandler);
-            backBtnEl.addEventListener('touchstart', backBtnHandler, { passive: false });
+            if (backBtnEl) {
+                backBtnEl.onclick = null;
+                backBtnEl.addEventListener('click', backBtnHandler);
+                backBtnEl.addEventListener('touchstart', backBtnHandler, { passive: false });
+            }
             
             const editHudBtnEl = document.getElementById('edit-hud-btn');
-            const editHudHandler = (e) => { 
-                if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
-                settings.isEditing = true; 
-                document.getElementById('settings-view').style.display = 'none'; 
-                document.getElementById('main-menu').style.display = 'none'; 
-                document.getElementById('hud').style.display = 'block'; 
-                document.getElementById('crosshair').style.display = 'block'; 
-                document.getElementById('mobile-ui').style.display = 'block'; 
-                document.getElementById('save-hud-btn').style.display = 'block'; 
-                setupHUDDrag(); // Reactivate drag listeners
-            };
-            editHudBtnEl.onclick = null;
-            editHudBtnEl.addEventListener('click', editHudHandler);
-            editHudBtnEl.addEventListener('touchstart', editHudHandler, { passive: false });
-            
-            const saveHudBtnEl = document.getElementById('save-hud-btn');
-            const saveHudHandler = (e) => { 
-                if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
-                settings.isEditing = false; 
-                document.getElementById('save-hud-btn').style.display = 'none'; 
-                document.getElementById('hud').style.display = 'none'; 
-                document.getElementById('crosshair').style.display = 'none'; 
-                document.getElementById('mobile-ui').style.display = 'none'; 
-                document.getElementById('main-menu').style.display = 'block'; 
-                document.getElementById('settings-view').style.display = 'block'; 
-                const els = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'minimap-canvas', 'info-panel']; 
-                const pos = {}; 
-                els.forEach(id => { 
-                    const el = document.getElementById(id); 
-                    if(el) pos[id] = { left: el.style.left, top: el.style.top, bottom: el.style.bottom, right: el.style.right }; 
-                }); 
-                localStorage.setItem('canaa_hud_pos', JSON.stringify(pos)); 
-            };
-            saveHudBtnEl.onclick = null;
-            saveHudBtnEl.addEventListener('click', saveHudHandler);
-            saveHudBtnEl.addEventListener('touchstart', saveHudHandler, { passive: false });
-            
-            const abortBtnEl = document.getElementById('abort-mission-btn');
-            const abortBtnHandler = (e) => { 
-                if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
-                document.getElementById('settings-view').style.display = 'none'; 
-                document.getElementById('hud').style.display = 'none'; 
-                document.getElementById('mobile-ui').style.display = 'none'; 
-                document.getElementById('crosshair').style.display = 'none'; 
-                document.getElementById('main-menu').style.display = 'block'; 
-                document.getElementById('start-view').style.removeProperty('display'); 
-                document.getElementById('start-view').style.display = 'flex'; 
-                document.getElementById('main-menu').classList.remove('paused-mode'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'auto'); 
-                isPlaying = false; gamePaused = false; scene.add(camera); cleanupMp(); playMenuMusic(); 
-            };
-            abortBtnEl.onclick = null;
-            abortBtnEl.addEventListener('click', abortBtnHandler);
+            if (editHudBtnEl) {
+                const editHudHandler = (e) => { 
+                    if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
+                    settings.isEditing = true; 
+                    const stv = document.getElementById('settings-view'); if (stv) stv.style.display = 'none'; 
+                    const mm = document.getElementById('main-menu'); if (mm) mm.style.display = 'none'; 
+                    const h = document.getElementById('hud'); if (h) h.style.display = 'block'; 
+                    const c = document.getElementById('crosshair'); if (c) c.style.display = 'block'; 
+                    const mui = document.getElementById('mobile-ui'); if (mui) mui.style.display = 'block'; 
+                    const sh = document.getElementById('save-hud-btn'); if (sh) sh.style.display = 'block'; 
+                    setupHUDDrag(); 
+                };
+                editHudBtnEl.onclick = null;
+                editHudBtnEl.addEventListener('click', editHudHandler);
+                editHudBtnEl.addEventListener('touchstart', editHudHandler, { passive: false });
+            }
 
-            // Handlers para telas de fim de jogo
-            document.getElementById('retry-btn').onclick = () => { 
-                if (isMultiplayerMode) { 
-                    document.getElementById('game-over-screen').style.display = 'none'; 
-                    showLobby(isCoopMode ? 'coop' : 'pvp'); 
-                } else { 
-                    resetGame('single'); 
-                } 
-            };
-            document.getElementById('win-retry-btn').onclick = () => { 
-                if (isMultiplayerMode) { 
-                    document.getElementById('win-screen').style.display = 'none'; 
-                    showLobby(isCoopMode ? 'coop' : 'pvp'); 
-                } else { 
-                    resetGame('single'); 
-                } 
-            };
-            document.getElementById('continue-btn').onclick = () => {
-                document.getElementById('level-complete-screen').style.display = 'none'; 
+            const saveHudBtnEl = document.getElementById('save-hud-btn');
+            if (saveHudBtnEl) {
+                const saveHudHandler = (e) => { 
+                    if (e.type === 'touchstart' && e.cancelable) e.preventDefault();
+                    settings.isEditing = false; 
+                    saveHudBtnEl.style.display = 'none'; 
+                    const mm = document.getElementById('main-menu'); if (mm) mm.style.display = 'flex'; 
+                    const stv = document.getElementById('settings-view'); if (stv) stv.style.display = 'flex'; 
+                    const ids = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone', 'minimap-canvas', 'info-panel'];
+                    const data = {};
+                    ids.forEach(id => { const el = document.getElementById(id); if (el) data[id] = { left: el.style.left, top: el.style.top }; el.style.pointerEvents = 'none'; });
+                    localStorage.setItem('canaa_hud_pos', JSON.stringify(data));
+                };
+                saveHudBtnEl.onclick = null;
+                saveHudBtnEl.addEventListener('click', saveHudHandler);
+                saveHudBtnEl.addEventListener('touchstart', saveHudHandler, { passive: false });
+            }
+
+            const abortBtnEl = document.getElementById('abort-mission-btn');
+            if (abortBtnEl) {
+                const abortBtnHandler = (e) => {
+                    if (e && e.type === 'touchstart' && e.cancelable) e.preventDefault();
+                    document.getElementById('settings-view').style.display = 'none'; 
+                    document.getElementById('hud').style.display = 'none'; 
+                    document.getElementById('mobile-ui').style.display = 'none'; 
+                    document.getElementById('crosshair').style.display = 'none'; 
+                    document.getElementById('main-menu').style.display = 'block'; 
+                    const sv = document.getElementById('start-view');
+                    if (sv) { sv.style.removeProperty('display'); sv.style.display = 'flex'; }
+                    document.getElementById('main-menu').classList.remove('paused-mode'); 
+                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1'); 
+                    document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'auto'); 
+                    isPlaying = false; gamePaused = false; 
+                    if (scene && camera) scene.add(camera);
+                    location.reload(); 
+                };
+                abortBtnEl.onclick = null;
+                abortBtnEl.addEventListener('click', abortBtnHandler);
+                abortBtnEl.addEventListener('touchstart', abortBtnHandler, { passive: false });
+            }
+
+            // Handlers para telas de fim de jogo (Consolidado e seguro)
+            setClick('retry-btn', () => { if (isMultiplayerMode) { location.reload(); } else { resetGame('single'); } });
+            setClick('win-retry-btn', () => { if (isMultiplayerMode) { location.reload(); } else { resetGame('single'); } });
+            setClick('continue-btn', () => { 
+                const lcs = document.getElementById('level-complete-screen'); 
+                if (lcs) lcs.style.display = 'none'; 
                 nextLevel();
-            };
-            const returnToMenu = () => { 
-                document.getElementById('game-over-screen').style.display = 'none'; 
-                document.getElementById('win-screen').style.display = 'none'; 
-                document.getElementById('main-menu').style.display = 'block'; 
-                document.getElementById('start-view').style.removeProperty('display'); 
-                document.getElementById('start-view').style.display = 'flex'; 
-                document.getElementById('hud').style.display = 'none'; 
-                document.getElementById('crosshair').style.display = 'none'; 
-                scene.add(camera); 
-                playMenuMusic(); 
-            };
-            document.getElementById('menu-return-btn').onclick = returnToMenu;
-            document.getElementById('win-menu-btn').onclick = returnToMenu;
+            });
+            setClick('menu-return-btn', () => location.reload());
+            setClick('win-menu-btn', () => location.reload());
         }
 
         function toggleWeapon() { 

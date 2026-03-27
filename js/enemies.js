@@ -185,7 +185,7 @@ export function spawnEnemies(count, level, { scene, walls, playerGroup, remotePl
     return spawnedEnemies;
 }
 
-export function killEnemyLocal(en, { isMultiplayerMode, isCoopMode, registerKill, registerTeamKill, dbUpdate = true, db, roomPath }) { 
+export function killEnemyLocal(en, { isMultiplayerMode, isCoopMode, registerKill, registerTeamKill, dbUpdate = true, db, roomPath, settings }) { 
     if (en.userData.dead) return; 
     en.userData.dead = true; 
     en.scale.y = 0.2; 
@@ -193,12 +193,15 @@ export function killEnemyLocal(en, { isMultiplayerMode, isCoopMode, registerKill
     const b = en.getObjectByName("body"); 
     if (b) b.material.color.setHex(0x333333); 
     
+    // Feedback sonoro de eliminação
+    playSound('kill', settings || { volume: 0.8 });
+    
     if (dbUpdate) { 
         if (isMultiplayerMode) { 
             update(ref(db, `${roomPath}/state/enemies/${en.userData.index}`), { dead: true }).catch(() => {}); 
         } 
         if (isCoopMode) { 
-            registerTeamKill(); 
+            registerKill(); // No Coop cada um conta seu ponto
         } else { 
             registerKill(); 
         } 
