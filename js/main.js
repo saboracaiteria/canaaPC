@@ -20,7 +20,7 @@ import {
 import { createHumanoidMesh, createHPBar } from './graphics.js';
 import { 
     initWorld, createWorld, scene, camera, renderer, walls, ramps, 
-    currentFloor, worldLights, skyMesh, skyUniforms 
+    currentFloor, worldLights, skyMesh, skyUniforms, envGroup 
 } from './world.js';
 import { 
     createEnemyMesh, createRemotePlayerMesh, spawnEnemies, killEnemyLocal, updateEnemies 
@@ -849,28 +849,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isMultiplayerMode && !isCoopMode) {
                     const targets = [];
             for (const key in remotePlayers) {
-                targets.push(remotePlayers[key].mesh);
+                if (remotePlayers[key].mesh) targets.push(remotePlayers[key].mesh);
             } 
                     const hits = bulletRaycaster.intersectObjects(targets, true);
                     if (hits.length > 0) {
                         let o = hits[0].object; 
                         while (o.parent && !o.userData.id) o = o.parent;
                         if (o.userData && o.userData.id) { 
-                            if (remotePlayers[o.userData.id] && remotePlayers[o.userData.id].invincible) { hit = true; return; }
-                            hit = true; 
-                            triggerHitMarker(); 
-                            createBloodEffect(hits[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize());
-                            const targetId = o.userData.id; 
-                            const dmg = b.userData.weaponType === 1 ? 70 : 10; 
-                            runTransaction(ref(db, `${roomPath}/players/${targetId}/hp`), (hp) => { 
-                                if (hp === null) return 100; 
-                                if (hp > 0) { let newHp = hp - dmg; return newHp <= 0 ? 0 : newHp; } 
-                                return 0; 
-                            }).then((result) => { 
-                                if (result.committed && result.snapshot.val() === 0) { 
-                                    if (!isCoopMode) registerKill(); 
-                                } 
-                            }).catch(() => {});
+                            if (remotePlayers[o.userData.id] && remotePlayers[o.userData.id].invincible) { hit = true; }
+                            else {
+                                hit = true; 
+                                triggerHitMarker(); 
+                                createBloodEffect(hits[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize());
+                                const targetId = o.userData.id; 
+                                const dmg = b.userData.weaponType === 1 ? 70 : 10; 
+                                runTransaction(ref(db, `${roomPath}/players/${targetId}/hp`), (hp) => { 
+                                    if (hp === null) return 100; 
+                                    if (hp > 0) { let newHp = hp - dmg; return newHp <= 0 ? 0 : newHp; } 
+                                    return 0; 
+                                }).then((result) => { 
+                                    if (result.committed && result.snapshot.val() === 0) { 
+                                        if (!isCoopMode) registerKill(); 
+                                    } 
+                                }).catch(() => {});
+                            }
                         }
                     }
                 }
@@ -2393,7 +2395,6 @@ document.addEventListener('DOMContentLoaded', () => {
             onJump: () => {
                 if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
             },
-            onFire: () => { fireWeapon(); },
             setPitch: (p) => { updateYawPitch(yaw, p); },
             setYaw: (y) => { updateYawPitch(y, pitch); }
         });
