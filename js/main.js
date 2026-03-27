@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', () => {
             activeEffectIntervals.push(interval);
         }
 
-        function updateBullets() {
+        function updateBullets(timeScale) {
             let active = 0; 
             enemies.forEach(e => { if (!e.userData.dead) active++; });
             
@@ -1323,8 +1323,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     isMultiplayerMode, isCoopMode, mazeMap, healthKits, armorVests, 
                     remotePlayers, enemies, playerGroup 
                 });
-                updateBullets(); 
-                updateGrenades(); 
+                updateBullets(timeScale); 
+                updateGrenades(timeScale); 
 
             } else if (!gamePaused && playerGroup) { 
                 const t = Date.now() * 0.0005; 
@@ -1611,13 +1611,14 @@ document.addEventListener('DOMContentLoaded', () => {
             throwGrenade(chargingGrenadeType, chargeRatio); 
         }
 
-        function updateGrenades() {
+        function updateGrenades(timeScale) {
             for (let i = activeGrenades.length - 1; i >= 0; i--) {
                 const g = activeGrenades[i]; 
-                g.life--; 
+                g.life -= timeScale; 
                 const oldPos = g.mesh.position.clone(); 
-                g.velocity.y -= 0.02; 
-                g.mesh.position.add(g.velocity);
+                g.velocity.y -= 0.02 * timeScale; 
+                _v1.copy(g.velocity).multiplyScalar(timeScale);
+                g.mesh.position.add(_v1);
                 
                 const dir = g.mesh.position.clone().sub(oldPos); 
                 const dist = dir.length();
