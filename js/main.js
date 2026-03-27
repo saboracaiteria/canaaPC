@@ -1366,17 +1366,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateGrenades(timeScale); 
 
             } else if (!gamePaused && playerGroup) { 
-                const t = Date.now() * 0.0005; 
+                // MENU MODE - CHARACTER PREVIEW
                 playerGroup.position.set(5, 0, 5); 
-                playerGroup.rotation.y = Math.PI - 0.5; 
+                playerGroup.rotation.y = menuDragRotation; 
                 
-                camera.position.set( 5 + Math.cos(t * 0.5) * 2.5, 1.7, 5 + Math.sin(t * 0.5) * 2.5 ); 
-                camera.lookAt(5, 1.45, 5); 
+                // Fixed tactical camera angle for menu
+                const camDist = 3.5;
+                camera.position.set(5, 1.7, 5 + camDist); 
+                camera.lookAt(5, 1.4, 5); 
                 
                 if(playerMeshParts && playerMeshParts.rArmPivot) { 
-                    playerMeshParts.rArmPivot.rotation.x = 1.2; 
-                    playerMeshParts.lArmPivot.rotation.x = 1.2; 
-                    playerGroup.scale.y = 1 + Math.sin(t * 4) * 0.005; 
+                    playerMeshParts.rArmPivot.rotation.x = 1.25; 
+                    playerMeshParts.lArmPivot.rotation.x = 1.25; 
+                    playerGroup.scale.y = 1 + Math.sin(Date.now() * 0.002) * 0.005; 
                 }
             }
             if (scene && camera && renderer) renderer.render(scene, camera);
@@ -1409,25 +1411,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             
             document.getElementById('main-menu').style.display = 'none'; 
-            document.getElementById('lobby-screen').style.display = 'none'; 
-            document.getElementById('game-over-screen').style.display = 'none';
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('crosshair').style.display = 'none';
             
             const startOverlay = document.getElementById('start-screen-overlay'); 
-            startOverlay.style.display = 'flex';
-            
-            const unlockAndStart = (e) => { 
-                goFullscreen(); 
-                startOverlay.style.display = 'none'; 
-                document.getElementById('main-menu').style.display = 'block'; 
-                
-                initAudio(); 
-                resumeAudio(); 
-                
-                playMenuMusic(); 
-                startOverlay.removeEventListener('click', unlockAndStart); 
-            };
-            
-            startOverlay.addEventListener('click', unlockAndStart); 
+            if (startOverlay) {
+                startOverlay.style.display = 'flex';
+                const unlockAndStart = (e) => { 
+                    goFullscreen(); 
+                    startOverlay.style.display = 'none'; 
+                    document.getElementById('main-menu').style.display = 'flex'; 
+                    initAudio(); 
+                    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
+                    playMenuMusic(); 
+                    startOverlay.removeEventListener('click', unlockAndStart); 
+                };
+                startOverlay.addEventListener('click', unlockAndStart); 
+            }
             window.addEventListener('resize', onResize); 
             animate();
         }
