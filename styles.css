@@ -332,21 +332,25 @@ body {
     display: flex;
     gap: 12px;
     align-items: center;
-    z-index: 5000; /* Higher priority */
+    z-index: 5000;
     pointer-events: none;
 }
 
-#pause-btn {
+#top-right-bar {
     position: fixed;
     top: 15px; right: 15px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
     z-index: 5000;
+    pointer-events: none;
 }
 
 .icon-btn {
-    width: 48px; height: 48px;
+    width: 52px; height: 52px; /* Slightly larger for touch */
     background: rgba(10, 20, 25, 0.7);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(0, 255, 204, 0.3);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0, 255, 204, 0.4);
     border-radius: 50%;
     display: flex;
     justify-content: center;
@@ -355,6 +359,13 @@ body {
     cursor: pointer;
     pointer-events: auto !important;
     transition: all 0.15s;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+}
+
+.icon-btn:active {
+    transform: scale(0.9);
+    background: var(--canaa-gold);
+    color: #000;
 }
 
 .icon-btn:hover { background: var(--canaa-gold); color: #000; }
@@ -396,14 +407,6 @@ body {
 #aim-btn { width: 68px; height: 68px; right: 45px; bottom: 150px; z-index: 215; }
 #jump-btn { width: 68px; height: 68px; right: 155px; bottom: 45px; z-index: 215; }
 #swap-btn { width: 56px; height: 56px; right: 245px; bottom: 45px; z-index: 210;}
-#cam-toggle-btn { 
-    width: 50px; height: 50px; 
-    right: 315px; bottom: 45px; /* Moved to action area */
-    z-index: 300; 
-    background: rgba(10, 20, 25, 0.8);
-    border: 1px solid var(--canaa-gold);
-    color: var(--canaa-gold);
-}
 #grenade-btn { width: 56px; height: 56px; right: 140px; bottom: 140px; z-index: 210; }
 #smoke-btn { width: 56px; height: 56px; right: 210px; bottom: 140px; z-index: 210; }
 
