@@ -6,6 +6,7 @@ export let scene, camera, renderer, skyMesh, skyUniforms;
 export let walls = [], ramps = [], currentFloor = null, worldLights = [], envGroup = null;
 
 export function initWorld(settings, onResize) {
+    if (renderer) return { scene, camera, renderer };
     scene = new THREE.Scene();
     
     camera = new THREE.PerspectiveCamera(settings.fov, window.innerWidth / window.innerHeight, 0.1, 2500); 

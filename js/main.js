@@ -929,15 +929,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
                 
-                if (!hit) { 
-                    if (envGroup) {
-                        const wh = bulletRaycaster.intersectObject(envGroup, true); 
+                    if (envStaticNodes) {
+                        const wh = bulletRaycaster.intersectObjects(envStaticNodes, false); 
                         if (wh.length > 0) { 
                             hit = true; 
                             createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
                         } 
                     }
-                }
                 
                 if (hit || b.userData.life <= 0) { 
                     bullets.splice(i, 1); 
@@ -1021,10 +1019,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        let animationFrameId = null;
         function animate() {
-            requestAnimationFrame(animate); 
+            if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+            animationFrameId = requestAnimationFrame(animate); 
             const dt = Math.min(0.1, clock.getDelta());
             const timeScale = dt * 60;
+            const safeAlpha = (a) => Math.min(0.99, a * timeScale);
 
             if (isPlaying && !gamePaused) {
                 if (isPC) { 
@@ -1125,9 +1126,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (ch) { ch.style.display = 'block'; ch.style.opacity = '0.9'; } 
                 }
 
-                recoilAngle = THREE.MathUtils.lerp(recoilAngle, 0, 0.15 * timeScale); 
-                fovKick = THREE.MathUtils.lerp(fovKick, 0, 0.4 * timeScale); 
-                gunRecoil = THREE.MathUtils.lerp(gunRecoil, 0, 0.2 * timeScale);
+                recoilAngle = THREE.MathUtils.lerp(recoilAngle, 0, safeAlpha(0.15)); 
+                fovKick = THREE.MathUtils.lerp(fovKick, 0, safeAlpha(0.4)); 
+                gunRecoil = THREE.MathUtils.lerp(gunRecoil, 0, safeAlpha(0.2));
+                if (Math.abs(recoilAngle) < 0.001) recoilAngle = 0;
                 
                 const activeAimFOV = currentWeapon === 1 ? 15 : config.aimFOV; 
                 const targetFOV = isAiming ? activeAimFOV : settings.fov;
@@ -1136,7 +1138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (scene.fog) { 
                     const targetFog = (isAiming && currentWeapon === 1) ? 0.01 : 0.045; 
-                    scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, targetFog, 0.1 * timeScale); 
+                    scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, targetFog, safeAlpha(0.1)); 
                 }
 
                 let wallRetract = 0;
@@ -1342,6 +1344,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function init() {
+            if (window.gameStartedFlag) return;
+            window.gameStartedFlag = true;
             // Debug detection
             console.log("Canaan Detection: isPC =", isPC, "isMobileDevice =", isMobileDevice(), "UA =", navigator.userAgent);
             
