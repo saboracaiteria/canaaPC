@@ -224,14 +224,14 @@ canvas { display: block; width: 100%; height: 100%; }
 #main-menu > * { pointer-events: auto; }
 
 .menu-top-title { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; width: 100%; pointer-events: none; }
-.brand-zone { font-family: 'Orbitron', sans-serif; font-size: 5rem; font-weight: 900; font-style: italic; letter-spacing: -2px; color: #fff; line-height: 0.8; text-shadow: 0 0 30px rgba(0,0,0,0.5); text-transform: uppercase; }
+.brand-zone { font-family: 'Orbitron', 'Impact', 'Arial Black', sans-serif; font-size: 5rem; font-weight: 900; font-style: italic; letter-spacing: -2px; color: #fff; line-height: 0.8; text-shadow: 0 0 30px rgba(0,0,0,0.5); text-transform: uppercase; }
 .brand-zone span { color: #f8d346; }
-.season-label { font-family: 'Orbitron', sans-serif; font-size: 1.2rem; color: #f8d346; letter-spacing: 5px; margin-top: 5px; opacity: 0.9; font-weight: 700; transform: skewX(-5deg); }
+.season-label { font-family: 'Orbitron', 'Rajdhani', 'Arial Narrow', sans-serif; font-size: 1.2rem; color: #f8d346; letter-spacing: 5px; margin-top: 5px; opacity: 0.9; font-weight: 700; transform: skewX(-5deg); }
 
 .operator-profile { position: absolute; bottom: 100px; left: 80px; text-align: left; animation: slideInLeft 0.5s ease-out; pointer-events: none; }
-.op-name { font-family: 'Orbitron', sans-serif; font-size: 4rem; font-weight: 900; font-style: italic; color: #fff; line-height: 1; text-transform: uppercase; letter-spacing: -1px; }
+.op-name { font-family: 'Orbitron', 'Impact', 'Arial Black', sans-serif; font-size: 4rem; font-weight: 900; font-style: italic; color: #fff; line-height: 1; text-transform: uppercase; letter-spacing: -1px; }
 .op-name span { display: block; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
-.op-unit { background: #f8d346; color: #000; font-family: 'Rajdhani', sans-serif; font-weight: 900; font-size: 1.1rem; display: inline-block; padding: 4px 20px; margin-top: 15px; transform: skewX(-15deg); letter-spacing: 2px; }
+.op-unit { background: #f8d346; color: #000; font-family: 'Rajdhani', 'Arial Narrow', sans-serif; font-weight: 900; font-size: 1.1rem; display: inline-block; padding: 4px 20px; margin-top: 15px; transform: skewX(-15deg); letter-spacing: 2px; }
 
 .side-menu-container { position: absolute; top: 50%; right: 50px; transform: translateY(-35%); display: flex; flex-direction: column; gap: 12px; width: 420px; }
 .menu-btn-modern { 
@@ -245,8 +245,8 @@ canvas { display: block; width: 100%; height: 100%; }
 }
 .menu-btn-modern:hover { transform: translateX(-15px); background: rgba(255,255,255,0.1); }
 .menu-btn-modern:hover::before { width: 40%; }
-.menu-btn-modern .btn-main { font-family: 'Orbitron', sans-serif; font-size: 2.22rem; font-weight: 900; letter-spacing: 1px; line-height: 1.1; font-style: italic; }
-.menu-btn-modern .btn-sub { font-family: 'Rajdhani', sans-serif; font-size: 0.95rem; opacity: 0.7; font-weight: 700; letter-spacing: 3px; margin-top: -2px; text-transform: uppercase; }
+.menu-btn-modern .btn-main { font-family: 'Orbitron', 'Impact', 'Arial Black', sans-serif; font-size: 2.22rem; font-weight: 900; letter-spacing: 1px; line-height: 1.1; font-style: italic; }
+.menu-btn-modern .btn-sub { font-family: 'Rajdhani', 'Arial Narrow', sans-serif; font-size: 0.95rem; opacity: 0.7; font-weight: 700; letter-spacing: 3px; margin-top: -2px; text-transform: uppercase; }
 
 .menu-btn-modern.play { border-right-color: #f8d346; background: linear-gradient(90deg, rgba(248,211,70,0.05), rgba(248,211,70,0.3) 100%); }
 .menu-btn-modern.play .btn-main { color: #fff; }
