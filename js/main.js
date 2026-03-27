@@ -259,14 +259,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             lobbyPlayerCount = count; 
             
-            const isHost = (activeIds[0] === myUserId) || (activeIds.length === 1 && activeIds[0] === myUserId);
+            const isHost = activeIds.length > 0 && activeIds[0] === myUserId;
             const startBtn = document.getElementById("start-mp-btn");
             const statusEl = document.getElementById("connection-status");
             
             if (startBtn) {
-                // In Coop, everyone should see the start button if it's a squad play, or at least the lead.
-                // In PVP, only host starts.
-                startBtn.style.display = (isHost || isCoopMode) ? "block" : "none";
+                // Host can always start (solo or squad). Non-hosts wait.
+                startBtn.style.display = isHost ? "block" : "none";
                 startBtn.classList.toggle('disabled', false); 
             }
             
@@ -274,13 +273,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (count >= 2) {
                     statusEl.innerText = "ESQUADRÃO PRONTO!";
                     statusEl.style.color = "#00FF41";
+                } else if (isHost) {
+                    statusEl.innerText = isCoopMode ? "INICIAR SOLO OU AGUARDAR ALIADOS" : "INICIAR SOLO OU AGUARDAR OPONENTES";
+                    statusEl.style.color = "#00f3ff";
                 } else {
-                    statusEl.innerText = isHost ? "PRONTO PARA OPERAÇÃO SOLO..." : "AGUARDANDO HOST...";
-                    statusEl.style.color = isHost ? "#00f3ff" : "#ffff00";
+                    statusEl.innerText = "AGUARDANDO HOST...";
+                    statusEl.style.color = "#ffff00";
                 }
             }
             
-            document.getElementById("pvp-level-selection").style.display = (!isCoopMode) ? "block" : "none";
+            const levelSel = document.getElementById("pvp-level-selection");
+            if (levelSel) levelSel.style.display = (!isCoopMode) ? "block" : "none";
             if (count === 0) listEl.innerHTML = '<div style="padding:10px; text-align:center">Nenhum operador ativo.</div>';
         }
 
@@ -855,14 +858,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             // PRE-FILTER TARGETS ONCE PER FRAME
-            const targetEntities = [];
+            const pvpTargets = [];
             if (isMultiplayerMode && !isCoopMode) {
                 for (const key in remotePlayers) {
                     const r = remotePlayers[key];
-                    if (r.mesh && !r.invincible) targetEntities.push(r.mesh);
+                    if (r.mesh && !r.invincible) pvpTargets.push(r.mesh);
                 }
-            } else {
-                enemies.forEach(e => { if (!e.userData.dead) targetEntities.push(e); });
             }
 
             for (let i = bullets.length - 1; i >= 0; i--) {
@@ -878,22 +879,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const d = b.position.distanceTo(pp); 
                 bulletRaycaster.set(pp, b.userData.velocity.clone().normalize()); 
                 bulletRaycaster.far = d + 0.1;
-                
-                // PERFORMANCE: Check proximal targets only
-                const localTargets = [];
-                for (let t of targetEntities) {
-                    if (b.position.distanceToSquared(t.position) < 225) localTargets.push(t);
-                }
 
-                if (localTargets.length > 0) {
-                    const hits = bulletRaycaster.intersectObjects(localTargets, true);
-                    if (hits.length > 0) {
-                        let o = hits[0].object; 
-                        while (o && o.parent && (!o.userData || !(o.userData.id || o.userData.isEnemyRoot))) o = o.parent;
-                        if (o && o.userData) { 
-                            hit = true; 
-                            const isEnemy = !!o.userData.isEnemyRoot;
-                            if (!isEnemy) { // Remote Player
+                // PVP: hit remote players
+                if (!hit && pvpTargets.length > 0) {
+                    const localPvp = pvpTargets.filter(t => b.position.distanceToSquared(t.position) < 225);
+                    if (localPvp.length > 0) {
+                        const hits = bulletRaycaster.intersectObjects(localPvp, true);
+                        if (hits.length > 0) {
+                            let o = hits[0].object; 
+                            while (o && o.parent && (!o.userData || !o.userData.id)) o = o.parent;
+                            if (o && o.userData && o.userData.id) { 
+                                hit = true; 
                                 triggerHitMarker(); 
                                 playSound('hit', settings);
                                 createBloodEffect(hits[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize());
@@ -907,10 +903,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                         if (!isCoopMode) { registerKill(); playSound('kill', settings); }
                                     } 
                                 }).catch(() => {});
-                            } else if (!o.userData.dead) { // AI Enemy
-                                hit = true;
-                                bulletRaycaster.far = d;
-                                // Damage handled in intersect logic below for AI...
                             }
                         }
                     }
@@ -2195,8 +2187,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const inviteAction = async (btnElement) => { 
             const originalHTML = btnElement.innerHTML; 
             try { 
-                btnElement.innerText = "GENERATING..."; 
-                const link = "https://canaa-zona-de-combate.onrender.com"; 
+                btnElement.innerText = "GERANDO..."; 
+                const link = window.location.href.split('?')[0]; 
                 let copied = false; 
                 if (navigator.clipboard && navigator.clipboard.writeText) { 
                     try { await navigator.clipboard.writeText(link); copied = true; } catch (err) { } 
@@ -2213,18 +2205,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     try { document.execCommand('copy'); copied = true; } catch (e) { } 
                     document.body.removeChild(textArea); 
                 } 
-                if (copied) { btnElement.innerText = "LINK COPIED! ✅"; } 
-                else { btnElement.innerText = "COPY FAILED ❌"; } 
+                if (copied) { btnElement.innerText = "LINK COPIADO! ✅"; } 
+                else { btnElement.innerText = "FALHA AO COPIAR ❌"; } 
                 
+                // Show QR popup only if elements exist in HTML
                 const qrPopup = document.getElementById('qr-popup'); 
                 const qrImg = document.getElementById('qr-image'); 
                 const qrText = document.getElementById('qr-link-text'); 
-                qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(link)}`; 
-                qrText.innerText = link; 
-                qrPopup.style.display = 'flex'; 
-                setTimeout(() => btnElement.innerHTML = originalHTML, 2000); 
+                if (qrPopup && qrImg && qrText) {
+                    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(link)}`; 
+                    qrText.innerText = link; 
+                    qrPopup.style.display = 'flex'; 
+                }
+                setTimeout(() => btnElement.innerHTML = originalHTML, 2500); 
             } catch (e) { 
-                btnElement.innerText = "ERROR ❌"; 
+                btnElement.innerText = "ERRO ❌"; 
                 setTimeout(() => btnElement.innerHTML = originalHTML, 2000);
             }
         };
