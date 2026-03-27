@@ -89,26 +89,34 @@
         </div>
         <div class="menu-sidebar" id="start-view">
             <button class="menu-btn-modern primary" id="play-btn">
-                <div class="btn-content">PLAY NOW<span class="btn-sub">START OPERATION</span></div>
+                <div class="btn-content">SINGLE PLAYER</div>
+                <span class="btn-sub">START OPERATION SOLO</span>
             </button>
-            <button class="menu-btn-modern mp" id="multiplayer-btn">
-                <div class="btn-content">MULTIPLAYER<span class="btn-sub">RANKED / PVP</span></div>
+            <button class="menu-btn-modern" id="multiplayer-btn">
+                <div class="btn-content">MULTIPLAYER</div>
+                <span class="btn-sub">RANKED PVP COMBAT</span>
             </button>
-            <button class="menu-btn-modern coop" id="coop-btn">
-                <div class="btn-content">CO-OP PVE<span class="btn-sub">ZOMBIE SURVIVAL</span></div>
+            <button class="menu-btn-modern" id="coop-btn">
+                <div class="btn-content">CO-OP PVE</div>
+                <span class="btn-sub">ZOMBIE SURVIVAL</span>
             </button>
-            <button class="menu-btn-modern" id="invite-btn" style="border-right-color: #00FF41; color: #00FF41;">
-                <div class="btn-content">INVITE SQUAD<span class="btn-sub">ONLINE</span></div>
+            <button class="menu-btn-modern" id="invite-btn">
+                <div class="btn-content">INVITE SQUAD</div>
+                <span class="btn-sub">COORDINATE ONLINE</span>
             </button>
-            <button class="menu-btn-modern secondary" id="settings-btn" style="border-right-color: #999; color: #aaa;">
-                <div class="btn-content">LOADOUT<span class="btn-sub">SETTINGS</span></div>
+            <button class="menu-btn-modern" id="settings-btn">
+                <div class="btn-content">LOADOUT</div>
+                <span class="btn-sub">SYSTEM SETTINGS</span>
             </button>
-            <div style="display: flex; gap: 5px; margin-top: 10px; width: 100%; justify-content: flex-end;">
-                <button class="menu-btn" id="mobile-fs-btn" style="flex: 1; font-size: 10px; max-width: 80px;">FULLSCREEN</button>
-                <button class="menu-btn danger" id="mobile-exit-btn" style="flex: 1; font-size: 10px; max-width: 60px;">EXIT</button>
-            </div>
-            <div class="menu-footer">CANAAN GAME &nbsp;|&nbsp; 2026</div>
         </div>
+        
+        <div class="controls-group" id="menu-utils">
+            <button class="action-btn" id="mobile-fs-btn" style="width: 50px; height: 50px; border-radius: 4px;">FS</button>
+            <button class="action-btn" id="mobile-exit-btn" style="width: 50px; height: 50px; border-radius: 4px; border-color: var(--canaa-danger);">X</button>
+        </div>
+
+        <div class="menu-footer">CANAAN ENGINE &nbsp;|&nbsp; PERSISTENT COMBAT &nbsp;|&nbsp; 2026</div>
+    </div>
         <div class="char-info">
             <div class="char-name">GHOST<br>OPERATOR</div>
             <div class="char-details">UNIT: SPECIAL FORCES</div>
