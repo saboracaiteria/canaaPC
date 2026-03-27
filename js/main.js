@@ -58,6 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let shakeTime = 0;
         let menuDragRotation = 0, isDraggingMenu = false, lastMenuX = 0;
         
+        let shakeIntensity = 0;
         const triggerShake = (intensity) => {
             shakeIntensity = intensity;
             shakeTime = 10; // Frames of shake
@@ -907,7 +908,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetsAI = [];
                     for (let e of aliveEnemies) {
                         const dSq = b.position.distanceToSquared(e.position);
-                        if (dSq < (isSniper ? 200 : 100)) targetsAI.push(e);
+                        const isSniperBullet = b.userData.weaponType === 1;
+                        if (dSq < (isSniperBullet ? 200 : 100)) targetsAI.push(e);
                     }
 
                     const hits = bulletRaycaster.intersectObjects(targetsAI, true); 

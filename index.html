@@ -138,61 +138,46 @@
     </div>
 
     <div id="main-menu" style="display: none;">
-        <div class="menu-overlay">
-            <header class="menu-header">
-                <div class="logo-section">
-                    <h1>CANAAN <span class="reloaded">RELOADED</span></h1>
-                </div>
-                <div class="char-info">
-                    <span id="player-name-display" style="color: var(--canaa-gold); font-weight: bold;">OPERATOR</span>
-                    <div style="font-size: 0.7rem; opacity: 0.5;">IDENTITY VERIFIED</div>
-                </div>
-            </header>
-
-            <div class="rotation-hint">DRAG TO ROTATE CHARACTER</div>
-
-            <div class="menu-cards-container">
-                <div class="game-card featured" id="play-btn">
-                    <div class="card-icon">⚔️</div>
-                    <div class="card-title">PLAY NOW</div>
-                    <div class="card-desc">START OPERATION</div>
-                </div>
-                <div class="game-card" id="multiplayer-btn">
-                    <div class="card-icon">🏆</div>
-                    <div class="card-title">MULTIPLAYER</div>
-                    <div class="card-desc">RANKED / PVP</div>
-                </div>
-                <div class="game-card" id="coop-btn">
-                    <div class="card-icon">🧟</div>
-                    <div class="card-title">ZOMBIES</div>
-                    <div class="card-desc">CO-OP SURVIVAL</div>
-                </div>
-                <div class="game-card" id="invite-btn">
-                    <div class="card-icon">👥</div>
-                    <div class="card-title">SOCIAL</div>
-                    <div class="card-desc">INVITE FRIENDS</div>
-                </div>
-            </div>
-
-            <nav class="mobile-nav-bar">
-                <button class="nav-btn active">HOME</button>
-                <button class="nav-btn" id="settings-btn">LOADOUT</button>
-                <button class="nav-btn" id="extras-btn">EXTRAS</button>
-                <button class="nav-btn" style="color: #ff4444;" id="mobile-exit-btn">EXIT</button>
-            </nav>
+        <!-- Top Title -->
+        <div class="menu-top-title">
+            <div class="brand-zone">COMBAT <span>ZONE</span></div>
+            <div class="season-label">SEASON CANAA RELOAD</div>
         </div>
 
-        <div class="menu-content" id="settings-view" style="display: none;">
-            <h2 style="color: var(--canaa-gold); margin: 0 0 20px 0;">LOADOUT & SYSTEM</h2>
-            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%;">
-                <div class="setting-row"><label>SENSITIVITY</label><input type="range" id="sens-slider" min="1" max="100" value="50"></div>
-                <div class="setting-row"><label>GRAPHICS</label><select id="graphics-select"><option value="high">ULTRA</option><option value="low" selected>PERFORMANCE</option></select></div>
-                <div class="setting-row"><label>SKIN</label><select id="skin-select"><option value="ninja" selected>STEALTH</option><option value="soldier">ELITE</option><option value="gold">GOLDEN</option></select></div>
-            </div>
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="menu-btn" id="back-btn">BACK</button>
-                <button class="menu-btn secondary" id="abort-mission-btn">EXIT</button>
-            </div>
+        <!-- Left Operator Info -->
+        <div class="operator-profile">
+            <div class="op-name">GHOST <span>OPERATOR</span></div>
+            <div class="op-unit">UNIT: SPECIAL FORCES</div>
+        </div>
+
+        <!-- Right Side Menu -->
+        <div class="side-menu-container">
+            <button class="menu-btn-modern play" id="play-btn">
+                <div class="btn-main">PLAY NOW</div>
+                <div class="btn-sub">START OPERATION</div>
+            </button>
+            <button class="menu-btn-modern pvp" id="multiplayer-btn">
+                <div class="btn-main">MULTIPLAYER</div>
+                <div class="btn-sub">RANKED / PVP</div>
+            </button>
+            <button class="menu-btn-modern coop" id="coop-btn">
+                <div class="btn-main">CO-OP PVE</div>
+                <div class="btn-sub">ZOMBIE SURVIVAL</div>
+            </button>
+            <button class="menu-btn-modern squad" id="invite-btn">
+                <div class="btn-main">INVITE SQUAD</div>
+                <div class="btn-sub">ONLINE</div>
+            </button>
+            <button class="menu-btn-modern settings" id="loadout-tab">
+                <div class="btn-main">LOADOUT</div>
+                <div class="btn-sub">SETTINGS</div>
+            </button>
+        </div>
+
+        <!-- Utility Bottom -->
+        <div class="utility-footer">
+            <button class="foot-btn blue" id="fullscreen-btn">FULLSCREEN</button>
+            <button class="foot-btn red" id="exit-btn">EXIT</button>
         </div>
     </div>
 
