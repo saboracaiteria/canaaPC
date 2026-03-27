@@ -9,7 +9,7 @@ export function setupMinimap() {
     minimapCanvas.width = 100; 
     minimapCanvas.height = 100; 
     minimapCanvas.className = 'minimap-container'; 
-    minimapCanvas.style.cssText = "position:absolute; top:20px; left:130px; background:rgba(0,0,0,0.8); pointer-events:auto; z-index:102; border:1px solid var(--canaa-green);"; 
+    minimapCanvas.style.cssText = "position:fixed; top:75px; right:20px; background:rgba(0,0,0,0.4); backdrop-filter:blur(5px); pointer-events:auto; z-index:110; border:1px solid var(--panel-border); border-radius:4px; transform: scale(0.9);"; 
     document.body.appendChild(minimapCanvas); 
     minimapCtx = minimapCanvas.getContext('2d', { willReadFrequently: true }); 
 }
