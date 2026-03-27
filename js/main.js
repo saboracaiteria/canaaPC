@@ -859,7 +859,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const hits = bulletRaycaster.intersectObjects(targets, true);
                     if (hits.length > 0) {
                         let o = hits[0].object; 
-                        while (o.parent && !o.userData.id) o = o.parent;
+                        while (o && o.parent && (!o.userData || !o.userData.id)) o = o.parent;
                         if (o.userData && o.userData.id) { 
                             if (remotePlayers[o.userData.id] && remotePlayers[o.userData.id].invincible) { hit = true; }
                             else {
@@ -899,7 +899,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         let o = volumeHit; 
                         if (!o) { 
                             let hitObj = hits[0].object; o = hitObj; 
-                            while (o && o.parent && !o.userData.isEnemyRoot) o = o.parent; 
+                            while (o && o.parent && (!o.userData || !o.userData.isEnemyRoot)) o = o.parent; 
                         }
                         
                         if (o && o.userData && o.userData.isEnemyRoot && !o.userData.dead) {
@@ -942,16 +942,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (hit || b.userData.life <= 0) { 
                     bullets.splice(i, 1); 
                     scene.remove(b); 
-                    // PERFORMANCE: Recursive disposal to clean up tracers and nested meshes
-                    b.traverse(node => {
-                        if (node.isMesh) {
-                            if (node.geometry) node.geometry.dispose();
-                            if (node.material) {
-                                if (Array.isArray(node.material)) node.material.forEach(m => m.dispose());
-                                else node.material.dispose();
-                            }
-                        }
-                    });
                 }
             }
         }
@@ -1303,7 +1293,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     ro.y += 2; 
                     aimRaycaster.set(ro, _vDown);
                     aimRaycaster.far = 10;
-                    const rampHits = aimRaycaster.intersectObjects([...ramps, ...walls], false); 
+                    if (!envStaticNodes) envStaticNodes = [...ramps, ...walls];
+                    const rampHits = aimRaycaster.intersectObjects(envStaticNodes, false); 
                     if (rampHits.length > 0) { 
                         if (rampHits[0].point.y > groundY) { 
                             groundY = rampHits[0].point.y; 
