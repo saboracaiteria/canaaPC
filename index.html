@@ -107,21 +107,49 @@
         </div>
     </div>
 
-    <div id="main-menu">
-        <div class="menu-brand">CANAAN <span>RELOADED</span></div>
-        <div id="start-view">
-            <div id="character-preview-container">
-                <!-- Character info or 3D preview will be shown here -->
-            </div>
-            
-            <button class="start-btn-cod" id="play-btn">START</button>
+    <div id="main-menu" style="display: flex;">
+        <div class="menu-overlay">
+            <header class="menu-header">
+                <div class="logo-section">
+                    <h1>CANAAN <span class="reloaded">RELOADED</span></h1>
+                </div>
+                <div class="char-info">
+                    <span id="player-name-display" style="color: var(--canaa-gold); font-weight: bold;">OPERATOR</span>
+                    <div style="font-size: 0.7rem; opacity: 0.5;">IDENTITY VERIFIED</div>
+                </div>
+            </header>
 
-            <div id="lobby-bottom-nav">
-                <button class="nav-btn active" id="multiplayer-btn">PVP RANKED</button>
-                <button class="nav-btn" id="coop-btn">ZOMBIES</button>
-                <button class="nav-btn" id="settings-btn">LOADOUT</button>
-                <button class="nav-btn" id="invite-btn">FRIENDS</button>
+            <div class="rotation-hint">DRAG TO ROTATE CHARACTER</div>
+
+            <div class="menu-cards-container">
+                <div class="game-card featured" id="play-btn">
+                    <div class="card-icon">⚔️</div>
+                    <div class="card-title">Solo Campaign</div>
+                    <div class="card-desc">Face the drone horde in isolated zones.</div>
+                </div>
+                <div class="game-card" id="multiplayer-btn">
+                    <div class="card-icon">🏆</div>
+                    <div class="card-title">PVP Ranked</div>
+                    <div class="card-desc">High stakes combat against other players.</div>
+                </div>
+                <div class="game-card" id="coop-btn">
+                    <div class="card-icon">🧟</div>
+                    <div class="card-title">Zombies Co-Op</div>
+                    <div class="card-desc">Survive together. No one left behind.</div>
+                </div>
+                <div class="game-card" id="invite-btn">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">Social / Friends</div>
+                    <div class="card-desc">Invite allies to your combat group.</div>
+                </div>
             </div>
+
+            <nav class="mobile-nav-bar">
+                <button class="nav-btn active">HOME</button>
+                <button class="nav-btn" id="settings-btn">LOADOUT</button>
+                <button class="nav-btn" id="extras-btn">EXTRAS</button>
+                <button class="nav-btn" style="color: #ff4444;" id="mobile-exit-btn">EXIT</button>
+            </nav>
         </div>
 
         <div class="menu-content" id="settings-view" style="display: none;">
@@ -129,7 +157,7 @@
             <div style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%;">
                 <div class="setting-row"><label>SENSITIVITY</label><input type="range" id="sens-slider" min="1" max="100" value="50"></div>
                 <div class="setting-row"><label>GRAPHICS</label><select id="graphics-select"><option value="high">ULTRA</option><option value="low" selected>PERFORMANCE</option></select></div>
-                <div class="setting-row"><label>SKIN</label><select id="skin-select"><option value="ninja">STEALTH</option><option value="soldier">ELITE</option></select></div>
+                <div class="setting-row"><label>SKIN</label><select id="skin-select"><option value="ninja" selected>STEALTH</option><option value="soldier">ELITE</option><option value="gold">GOLDEN</option></select></div>
             </div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="menu-btn" id="back-btn">BACK</button>

@@ -55,8 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let recoilAngle = 0;
         let fovKick = 0;
         let gunRecoil = 0; 
-        let shakeIntensity = 0;
         let shakeTime = 0;
+        let menuDragRotation = 0, isDraggingMenu = false, lastMenuX = 0;
         
         const triggerShake = (intensity) => {
             shakeIntensity = intensity;
@@ -1260,7 +1260,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (head) head.rotation.x = pitch;
                 }
                 
-                if (isThirdPerson) {
+                if (!isPlaying) {
+                    playerGroup.rotation.y = menuDragRotation;
+                    if (!isThirdPerson) toggleCameraMode(); // Force 3P in menu
+                    
+                    _v1.set(0, 1.8, 3.5); 
+                    _v1.applyAxisAngle(_vUp, yaw); 
+                    _v2.copy(playerGroup.position).add(_v1);
+                    camera.position.lerp(_v2, 0.1);
+                    _v3.copy(playerGroup.position).add(new THREE.Vector3(0, 1.0, 0));
+                    camera.lookAt(_v3);
+                } else if (isThirdPerson) {
                     const ay = yaw; 
                     const shoulderHeight = 2.0; 
                     const shoulderRight = 0.8; 
@@ -2040,11 +2050,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         ms.innerHTML = `CO-OP: <span id="mp-count">0</span> OP | ROOM: <span id="room-id">${myUserId ? myUserId.substring(0, 6) : '...'}</span>`; 
                         ms.style.color = "#00FF41"; 
                     } else { 
-                        ms.innerHTML = `ONLINE: <span id="mp-count">0</span> PL | ROOM: <span id="room-id">${myUserId ? myUserId.substring(0, 6) : '...'}</span>`; 
-                        ms.style.color = "#00f3ff"; 
                     } 
                 } 
-                document.getElementById('master-status').style.display = 'none';
+                // Removed master-status check (obsolete)
 
                 createWorld(currentLevel, activeTextures, isMultiplayerMode, isCoopMode);
                 envStaticNodes = [...ramps, ...walls];
@@ -2301,12 +2309,29 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const mmEl = document.getElementById('main-menu');
             if (mmEl) {
+                mmEl.addEventListener('mousedown', (e) => { isDraggingMenu = true; lastMenuX = e.clientX; });
+                mmEl.addEventListener('touchstart', (e) => { isDraggingMenu = true; lastMenuX = e.touches[0].clientX; }, { passive: true });
+                
+                window.addEventListener('mousemove', (e) => {
+                    if (!isDraggingMenu || isPlaying) return;
+                    const delta = e.clientX - lastMenuX;
+                    menuDragRotation += delta * 0.01;
+                    lastMenuX = e.clientX;
+                });
+                
+                window.addEventListener('touchmove', (e) => {
+                    if (!isDraggingMenu || isPlaying) return;
+                    const delta = e.touches[0].clientX - lastMenuX;
+                    menuDragRotation += delta * 0.01;
+                    lastMenuX = e.touches[0].clientX;
+                }, { passive: true });
+                
+                window.addEventListener('mouseup', () => isDraggingMenu = false);
+                window.addEventListener('touchend', () => isDraggingMenu = false);
+
                 mmEl.addEventListener('click', (e) => { 
                     if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
                 });
-                mmEl.addEventListener('touchstart', (e) => { 
-                    if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 
-                }, { passive: true });
             }
             
             setClick('settings-btn', () => { 
