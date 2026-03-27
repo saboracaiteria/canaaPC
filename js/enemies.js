@@ -211,6 +211,7 @@ export function updateEnemies(dt, {
     envNodes, checkWall, applyDamage, camera, scene, runTransaction
 }) {
     const now = performance.now();
+    const timeScale = dt * 60;
     let hasEnemyUpdates = false;
     const enemyUpdates = {};
     const isPVP = isMultiplayerMode && !isCoopMode;
@@ -271,7 +272,8 @@ export function updateEnemies(dt, {
             const d = Math.sqrt(minDistSq);
             
             // PHYSICS: Gravity and Grounding
-            e.userData.velocityY = (e.userData.velocityY || 0) - 0.015; e.position.y += e.userData.velocityY;
+            e.userData.velocityY = (e.userData.velocityY || 0) - (0.015 * timeScale); 
+            e.position.y += e.userData.velocityY * timeScale;
             e.userData.groundCheckFrame = (e.userData.groundCheckFrame || 0) + 1;
             if (e.userData.groundCheckFrame % 3 === 0) {
                 let botGroundY = 0; 
@@ -340,7 +342,7 @@ export function updateEnemies(dt, {
                 }
 
                 if (d > 1.5) { 
-                    let moveSpeed = 0.075; if (e.userData.hp <= 50) moveSpeed *= 1.5;
+                    let moveSpeed = 0.075 * timeScale; if (e.userData.hp <= 50) moveSpeed *= 1.5;
                     if (now - levelStartTime < 3000) { moveSpeed = 0; }
                     
                     const nx = e.position.x + _enemyDir.x * moveSpeed; const nz = e.position.z + _enemyDir.z * moveSpeed;

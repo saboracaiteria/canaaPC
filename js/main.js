@@ -841,8 +841,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const b = bullets[i]; 
                 const pp = b.userData.lastPos ? b.userData.lastPos.clone() : b.position.clone(); 
                 b.userData.lastPos = b.position.clone(); 
-                b.position.add(b.userData.velocity); 
-                b.userData.life--;
+                _v1.copy(b.userData.velocity).multiplyScalar(timeScale);
+                b.position.add(_v1); 
+                b.userData.life -= timeScale;
                 
                 let hit = false; 
                 const d = b.position.distanceTo(pp); 
@@ -1032,7 +1033,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function animate() {
             requestAnimationFrame(animate); 
-            const dt = clock.getDelta();
+            const dt = Math.min(0.1, clock.getDelta());
+            const timeScale = dt * 60;
 
             if (isPlaying && !gamePaused) {
                 if (isPC) { 
@@ -1044,7 +1046,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 camera.rotation.x = pitch; 
                 
                 if (Math.abs(moveInput.x) > 0.1 || Math.abs(moveInput.y) > 0.1 || keyState.w || keyState.s || keyState.a || keyState.d) { 
-                    walkCycle += 0.2; 
+                    walkCycle += 0.2 * timeScale; 
                 } else {
                     walkCycle = 0;
                 }
@@ -1133,9 +1135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (ch) { ch.style.display = 'block'; ch.style.opacity = '0.9'; } 
                 }
 
-                recoilAngle = THREE.MathUtils.lerp(recoilAngle, 0, 0.15); 
-                fovKick = THREE.MathUtils.lerp(fovKick, 0, 0.4); 
-                gunRecoil = THREE.MathUtils.lerp(gunRecoil, 0, 0.2);
+                recoilAngle = THREE.MathUtils.lerp(recoilAngle, 0, 0.15 * timeScale); 
+                fovKick = THREE.MathUtils.lerp(fovKick, 0, 0.4 * timeScale); 
+                gunRecoil = THREE.MathUtils.lerp(gunRecoil, 0, 0.2 * timeScale);
                 
                 const activeAimFOV = currentWeapon === 1 ? 15 : config.aimFOV; 
                 const targetFOV = isAiming ? activeAimFOV : settings.fov;
@@ -1144,7 +1146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (scene.fog) { 
                     const targetFog = (isAiming && currentWeapon === 1) ? 0.01 : 0.045; 
-                    scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, targetFog, 0.1); 
+                    scene.fog.density = THREE.MathUtils.lerp(scene.fog.density, targetFog, 0.1 * timeScale); 
                 }
 
                 let wallRetract = 0;
@@ -1270,7 +1272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     shakeIntensity *= 0.9; 
                 }
                 
-                const speed = 0.18; 
+                const speed = 0.18 * timeScale; 
                 _v1.copy(_vFwd).applyAxisAngle(_vUp, yaw); 
                 _v2.copy(_vRgt).applyAxisAngle(_vUp, yaw);
                 const mx = (_v1.x * -moveInput.y + _v2.x * moveInput.x) * speed; 
@@ -1310,8 +1312,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 if (isGrounded && playerGroup.position.y > groundY + 0.1) isGrounded = false;
-                if (!isGrounded) velocityY -= GRAVITY;
-                playerGroup.position.y += velocityY;
+                if (!isGrounded) velocityY -= GRAVITY * timeScale;
+                playerGroup.position.y += velocityY * timeScale;
                 if (playerGroup.position.y <= groundY + 0.05) { playerGroup.position.y = groundY + 0.05; velocityY = 0; isGrounded = true; }
 
                 processShooting(); 
