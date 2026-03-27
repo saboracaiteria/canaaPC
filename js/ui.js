@@ -2,6 +2,8 @@ import { mazeSize, cellSize } from './constants.js';
 
 let minimapCanvas = null;
 let minimapCtx = null;
+let offscreenMainmap = null;
+let offscreenCtx = null;
 
 export function setupMinimap() { 
     minimapCanvas = document.createElement('canvas'); 
@@ -10,7 +12,29 @@ export function setupMinimap() {
     minimapCanvas.height = 100; 
     minimapCanvas.className = 'minimap-container'; 
     document.body.appendChild(minimapCanvas); 
-    minimapCtx = minimapCanvas.getContext('2d', { willReadFrequently: true }); 
+    minimapCtx = minimapCanvas.getContext('2d', { alpha: false }); 
+    
+    offscreenMainmap = document.createElement('canvas');
+    offscreenMainmap.width = 100;
+    offscreenMainmap.height = 100;
+    offscreenCtx = offscreenMainmap.getContext('2d', { alpha: false });
+}
+
+function preRenderMap(mazeMap) {
+    if (!offscreenCtx || !mazeMap) return;
+    const s = 100 / (mazeSize * cellSize); 
+    offscreenCtx.fillStyle = '#111'; 
+    offscreenCtx.fillRect(0, 0, 100, 100); 
+    offscreenCtx.fillStyle = '#444'; // Wall color
+    
+    for (let i = 0; i < mazeSize; i++) {
+        for (let j = 0; j < mazeSize; j++) {
+            if (mazeMap[i][j] === 1) {
+                offscreenCtx.fillRect(j * cellSize * s, i * cellSize * s, cellSize * s, cellSize * s);
+            }
+        }
+    }
+    offscreenMainmap.ready = true;
 }
 
 export function drawMinimap(state) {
@@ -22,23 +46,19 @@ export function drawMinimap(state) {
     if (isMultiplayerMode && !isCoopMode) return; 
     if (!minimapCtx) return;
     
-    minimapCtx.clearRect(0, 0, 100, 100); 
+    if (!offscreenMainmap.ready) preRenderMap(mazeMap);
+    
+    // 1. Copy static map
+    minimapCtx.drawImage(offscreenMainmap, 0, 0);
+    
     const s = 100 / (mazeSize * cellSize); 
-    minimapCtx.fillStyle = '#111'; 
-    minimapCtx.fillRect(0, 0, 100, 100); 
-    minimapCtx.fillStyle = '#555';
     
-    for (let i = 0; i < mazeSize; i++) {
-        for (let j = 0; j < mazeSize; j++) {
-            if (mazeMap[i][j] === 1) minimapCtx.fillRect(j * cellSize * s, i * cellSize * s, cellSize * s, cellSize * s);
-        }
-    }
-    
+    // 2. Dynamic entities
     minimapCtx.fillStyle = '#00FF41'; 
-    healthKits.forEach(k => { if (!k.userData.taken) minimapCtx.fillRect(k.position.x * s, k.position.z * s, 3, 3); });
+    healthKits.forEach(k => { if (!k.userData.taken) minimapCtx.fillRect(k.position.x * s, k.position.z * s, 2, 2); });
     
     minimapCtx.fillStyle = '#0088FF'; 
-    armorVests.forEach(k => { if (k.userData.active) minimapCtx.fillRect(k.position.x * s, k.position.z * s, 3, 3); });
+    armorVests.forEach(k => { if (k.userData.active) minimapCtx.fillRect(k.position.x * s, k.position.z * s, 2, 2); });
     
     if (isMultiplayerMode) { 
         minimapCtx.fillStyle = isCoopMode ? '#00FF41' : '#f33'; 
@@ -50,12 +70,12 @@ export function drawMinimap(state) {
     
     if (!isMultiplayerMode || isCoopMode) { 
         minimapCtx.fillStyle = '#f33'; 
-        enemies.forEach(e => { if (!e.userData.dead) minimapCtx.fillRect(e.position.x * s, e.position.z * s, 3, 3); }); 
+        enemies.forEach(e => { if (!e.userData.dead && e.visible) minimapCtx.fillRect(e.position.x * s, e.position.z * s, 2, 2); }); 
     }
     
     minimapCtx.fillStyle = '#fff'; 
     minimapCtx.beginPath(); 
-    minimapCtx.arc(playerGroup.position.x * s, playerGroup.position.z * s, 3, 0, Math.PI * 2); 
+    minimapCtx.arc(playerGroup.position.x * s, playerGroup.position.z * s, 3.5, 0, Math.PI * 2); 
     minimapCtx.fill();
 }
 

@@ -841,60 +841,72 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function updateBullets(timeScale) {
-            let active = 0; 
-            enemies.forEach(e => { if (!e.userData.dead) active++; });
-            
-            if (!isMultiplayerMode && enemies.length > 0 && active === 0 && isPlaying) { 
-                nextLevel(); 
+            if (!bullets.length) {
+                let aliveCount = 0; 
+                enemies.forEach(e => { if (!e.userData.dead) aliveCount++; });
+                if (!isMultiplayerMode && enemies.length > 0 && aliveCount === 0 && isPlaying) { 
+                    nextLevel(); 
+                }
                 return; 
             }
             
+            // PRE-FILTER TARGETS ONCE PER FRAME
+            const targetEntities = [];
+            if (isMultiplayerMode && !isCoopMode) {
+                for (const key in remotePlayers) {
+                    const r = remotePlayers[key];
+                    if (r.mesh && !r.invincible) targetEntities.push(r.mesh);
+                }
+            } else {
+                enemies.forEach(e => { if (!e.userData.dead) targetEntities.push(e); });
+            }
+
             for (let i = bullets.length - 1; i >= 0; i--) {
                 const b = bullets[i]; 
                 const pp = b.userData.lastPos ? b.userData.lastPos.clone() : b.position.clone(); 
                 b.userData.lastPos = b.position.clone(); 
+                
                 _v1.copy(b.userData.velocity).multiplyScalar(timeScale);
                 b.position.add(_v1); 
                 b.userData.life -= timeScale;
                 
                 let hit = false; 
                 const d = b.position.distanceTo(pp); 
-                const dir = b.userData.velocity.clone().normalize(); 
-                bulletRaycaster.set(pp, dir); 
-                bulletRaycaster.far = d;
+                bulletRaycaster.set(pp, b.userData.velocity.clone().normalize()); 
+                bulletRaycaster.far = d + 0.1;
                 
-                if (isMultiplayerMode && !isCoopMode) {
-                    const targets = [];
-                    for (const key in remotePlayers) {
-                        const r = remotePlayers[key];
-                        if (r.mesh && !r.invincible) {
-                            // PERFORMANCE LAG FIX 2: Check Distance before Raycast
-                            const distToBot = b.position.distanceToSquared(r.mesh.position);
-                            if (distToBot < 100) targets.push(r.mesh); // Only raycast if within 10m
-                        }
-                    } 
-                    
-                    if (targets.length > 0) {
-                        const hits = bulletRaycaster.intersectObjects(targets, true);
-                        if (hits.length > 0) {
-                            let o = hits[0].object; 
-                            while (o && o.parent && (!o.userData || !o.userData.id)) o = o.parent;
-                            if (o.userData && o.userData.id) { 
-                                hit = true; 
+                // PERFORMANCE: Check proximal targets only
+                const localTargets = [];
+                for (let t of targetEntities) {
+                    if (b.position.distanceToSquared(t.position) < 225) localTargets.push(t);
+                }
+
+                if (localTargets.length > 0) {
+                    const hits = bulletRaycaster.intersectObjects(localTargets, true);
+                    if (hits.length > 0) {
+                        let o = hits[0].object; 
+                        while (o && o.parent && (!o.userData || !(o.userData.id || o.userData.isEnemyRoot))) o = o.parent;
+                        if (o && o.userData) { 
+                            hit = true; 
+                            const isEnemy = !!o.userData.isEnemyRoot;
+                            if (!isEnemy) { // Remote Player
                                 triggerHitMarker(); 
-                                playSound('hit', settings); // Som de impacto em PvP (opcional, hitmarker)
+                                playSound('hit', settings);
                                 createBloodEffect(hits[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize());
                                 const targetId = o.userData.id; 
                                 const dmg = b.userData.weaponType === 1 ? 70 : 10; 
                                 runTransaction(ref(db, `${roomPath}/players/${targetId}/hp`), (hp) => { 
                                     if (hp === null) return 100; 
-                                    if (hp > 0) { let newHp = hp - dmg; return newHp <= 0 ? 0 : newHp; } 
-                                    return 0; 
+                                    return Math.max(0, hp - dmg);
                                 }).then((result) => { 
                                     if (result.committed && result.snapshot.val() === 0) { 
                                         if (!isCoopMode) { registerKill(); playSound('kill', settings); }
                                     } 
                                 }).catch(() => {});
+                            } else if (!o.userData.dead) { // AI Enemy
+                                hit = true;
+                                bulletRaycaster.far = d;
+                                // Damage handled in intersect logic below for AI...
                             }
                         }
                     }
@@ -1430,15 +1442,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if (startOverlay) {
                 startOverlay.style.display = 'flex';
                 const unlockAndStart = (e) => { 
+                    if (e && e.cancelable) e.preventDefault();
                     goFullscreen(); 
                     startOverlay.style.display = 'none'; 
                     document.getElementById('main-menu').style.display = 'flex'; 
                     initAudio(); 
-                    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume(); 
-                    playMenuMusic(); 
+                    resumeAudio();
+                    if (typeof playMenuMusic === 'function') playMenuMusic(); 
                     startOverlay.removeEventListener('click', unlockAndStart); 
+                    startOverlay.removeEventListener('touchstart', unlockAndStart);
                 };
                 startOverlay.addEventListener('click', unlockAndStart); 
+                startOverlay.addEventListener('touchstart', unlockAndStart, { passive: false });
             }
             window.addEventListener('resize', onResize); 
             animate();
