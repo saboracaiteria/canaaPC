@@ -1,386 +1,143 @@
 :root {
-    --canaa-gold: #00FFCC; /* Now a Neon Cyan */
-    --canaa-green: #39FF14; /* Neon Green */
-    --canaa-blue: #00D2FF; 
-    --canaa-danger: #FF3131;
-    --bg-dark: #020406;
-    --hud-glass: rgba(10, 20, 25, 0.65);
-    --panel-border: rgba(0, 255, 204, 0.3);
-    --font-display: 'Orbitron', sans-serif;
-    --font-body: 'Rajdhani', sans-serif;
+    --canaa-blue: #00f3ff;
+    --canaa-gold: #ffd700;
+    --canaa-danger: #ff3333;
+    --canaa-green: #00ff41;
+}
+
+@font-face {
+    font-family: 'Orbitron';
+    src: url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+}
+
+@font-face {
+    font-family: 'Rajdhani';
+    src: url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;500;700&display=swap');
 }
 
 body {
     margin: 0;
+    padding: 0;
+    width: 100vw;
+    height: 100vh;
     overflow: hidden;
-    background-color: var(--bg-dark);
-    font-family: var(--font-body);
-    touch-action: none;
+    background: #050505;
+    font-family: 'Orbitron', sans-serif;
     user-select: none;
-    -webkit-user-select: none;
-    color: #fff;
+    -webkit-tap-highlight-color: transparent;
 }
 
-/* --- TACTICAL GLASS OVERLAYS --- */
-.glass-panel {
-    background: var(--hud-glass);
-    backdrop-filter: blur(15px) saturate(180%);
-    -webkit-backdrop-filter: blur(15px) saturate(180%);
-    border: 1px solid var(--panel-border);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
-    position: relative;
-    overflow: hidden;
-}
+canvas { display: block; width: 100%; height: 100%; }
 
-.glass-panel::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255, 255, 255, 0.03) 3px);
-    pointer-events: none;
-}
-
-/* --- START SCREEN --- */
-#start-screen-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at center, #0a151a 0%, #020406 100%);
-    z-index: 999999;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
-
-.start-brand {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: clamp(40px, 12vw, 100px);
-    letter-spacing: -4px;
-    text-transform: uppercase;
-    background: linear-gradient(to bottom, #fff 40%, var(--canaa-gold) 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    filter: drop-shadow(0 0 15px rgba(0, 255, 204, 0.5));
-}
-
-.press-text {
-    margin-top: 50px;
-    font-family: var(--font-display);
-    font-size: 24px;
-    letter-spacing: 12px;
-    color: var(--canaa-gold);
-    animation: pulse 1.5s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; transform: scale(0.95); }
-    50% { opacity: 1; transform: scale(1); }
-}
-
-/* --- MODERN HUD --- */
+/* TACTICAL HUD (CODM STYLE) */
 #hud {
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 100;
 }
+
+.hud-center-top {
+    position: fixed;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    color: #fff;
+    font-family: 'Rajdhani';
+    font-size: 14px;
+    letter-spacing: 2px;
+}
+
+#compass {
+    background: rgba(0,0,0,0.4);
+    padding: 2px 15px;
+    border-bottom: 1px solid rgba(0,243,255,0.3);
+}
+
+#bottom-hud {
+    position: fixed;
+    bottom: 20px; left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+}
+
+#status-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    width: 200px;
+}
+
+.hud-status-bar {
+    background: rgba(0,0,0,0.4);
+    height: 12px;
+    border: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+    border-radius: 2px;
+}
+
+.bar-fill { height: 100%; transition: width 0.3s; }
+.bar-fill.blue { background: #00f3ff; box-shadow: 0 0 10px #00f3ff; }
+.bar-fill.red { background: #ff3333; box-shadow: 0 0 10px #ff3333; }
+
+.bar-label {
+    position: absolute;
+    top: -12px; left: 0;
+    font-size: 9px;
+    color: #fff;
+    font-family: 'Rajdhani';
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+#weapon-group {
+    text-align: center;
+    background: rgba(0,20,30,0.6);
+    padding: 5px 30px;
+    border-top: 2px solid #00f3ff;
+}
+
+#weapon-icon { font-size: 20px; color: #fff; }
+#ammo-info { color: #00f3ff; font-family: 'Orbitron'; font-size: 12px; }
+
+#score-group {
+    font-family: 'Rajdhani';
+    color: #fff;
+    font-size: 12px;
+    background: rgba(0,0,0,0.4);
+    padding: 2px 10px;
+}
+
+/* CROSSHAIR */
+#crosshair {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30px; height: 30px;
+    pointer-events: none;
+    z-index: 1000;
+}
+#crosshair::before { content: ""; position: absolute; top: 14px; left: 0; width: 100%; height: 2px; background: #00ff41; }
+#crosshair::after { content: ""; position: absolute; left: 14px; top: 0; width: 2px; height: 100%; background: #00ff41; }
 
 #aim-zone {
     position: fixed;
     top: 0; right: 0;
     width: 60%; height: 100%;
     pointer-events: auto;
-    z-index: 151; /* Overlays the scene but under overlays */
-    touch-action: none;
+    z-index: 151;
 }
 
-.info-panel {
-    position: fixed;
-    top: 75px; /* Offset from top icons */
-    left: 15px;
-    background: rgba(0, 5, 10, 0.4);
-    backdrop-filter: blur(8px);
-    padding: 6px 12px;
-    border-left: 3px solid var(--canaa-gold);
-    font-family: var(--font-display);
-    font-size: 11px;
-    z-index: 105;
-    pointer-events: none;
-    border-radius: 0 4px 4px 0;
-}
-
-#status-bars {
-    position: fixed;
-    bottom: 25px;
-    left: 25px;
-    width: 240px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    z-index: 110;
-}
-
-.bar-container {
-    height: 8px;
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.bar-fill {
-    height: 100%;
-    box-shadow: 0 0 15px currentColor;
-    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-#hp-bar { background: var(--canaa-danger); color: var(--canaa-danger); }
-#armor-bar { background: var(--canaa-blue); color: var(--canaa-blue); }
-
-.bar-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #fff;
-    margin-bottom: 2px;
-    text-transform: uppercase;
-}
-
-/* --- TACTICAL MISSION CARDS --- */
-#main-menu {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle at center, rgba(0, 255, 204, 0.08) 0%, #020406 100%);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px); /* Reduced for performance */
-}
-
-.menu-header {
-    margin-bottom: 50px;
-    text-align: center;
-    pointer-events: none;
-}
-
-.menu-brand {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 64px;
-    letter-spacing: -2px;
-    text-transform: uppercase;
-    color: #fff;
-    font-style: italic;
-    line-height: 0.9;
-}
-
-.menu-brand span { color: var(--canaa-gold); }
-
-.menu-season {
-    font-size: 14px;
-    letter-spacing: 8px;
-    color: var(--canaa-gold);
-    margin-top: 10px;
-}
-
-.menu-sidebar {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-    width: 95%;
-    max-width: 1200px;
-    padding: 20px;
-    pointer-events: auto !important;
-}
-
-.menu-btn-modern {
-    background: rgba(10, 20, 25, 0.85);
-    border: 1px solid rgba(0, 255, 204, 0.15);
-    border-bottom: 4px solid var(--canaa-gold);
-    color: #fff;
-    width: 280px;
-    min-height: 200px;
-    padding: 40px;
-    font-family: var(--font-display);
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: flex-end;
-    position: relative;
-    overflow: hidden;
-    text-align: left;
-    pointer-events: auto !important;
-    user-select: none;
-    -webkit-user-select: none;
-}
-
-.menu-btn-modern::before {
-    content: "";
-    position: absolute;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: linear-gradient(0deg, var(--canaa-gold) 0%, transparent 50%);
-    opacity: 0;
-    transition: opacity 0.3s;
-    pointer-events: none;
-}
-
-.menu-btn-modern:hover {
-    transform: translateY(-8px);
-    background: rgba(0, 255, 204, 0.1);
-    border-color: #fff;
-    box-shadow: 0 15px 35px rgba(0, 255, 204, 0.15);
-}
-
-.menu-btn-modern:hover::before {
-    opacity: 0.1;
-}
-
-.menu-btn-modern:active {
-    transform: translateY(-2px) scale(0.98);
-    transition: transform 0.05s;
-}
-
-.menu-btn-modern.primary {
-    border-bottom-width: 6px;
-}
-
-.menu-btn-modern .btn-content {
-    font-size: 28px;
-    font-weight: 900;
-    line-height: 1;
-    z-index: 2;
-}
-
-.menu-btn-modern .btn-sub {
-    font-size: 11px;
-    letter-spacing: 2px;
-    color: rgba(255,255,255,0.6);
-    margin-top: 10px;
-    font-family: var(--font-body);
-    font-weight: 700;
-    z-index: 2;
-}
-
-/* --- CROSSHAIR --- */
-#crosshair {
-    position: absolute;
-    top: 50%; left: 50%;
-    width: 30px; height: 30px;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
-    z-index: 10;
-}
-
-#crosshair::before, #crosshair::after {
-    content: "";
-    position: absolute;
-    background: var(--canaa-green);
-    box-shadow: 0 0 8px var(--canaa-green);
-}
-
-#crosshair::before { top: 50%; left: 0; width: 100%; height: 2px; transform: translateY(-50%); }
-#crosshair::after { left: 50%; top: 0; width: 2px; height: 100%; transform: translateX(-50%); }
-
-#sniper-scope {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: radial-gradient(circle, transparent 30%, black 70%);
-    display: none;
-    z-index: 150;
-}
-
-#status-bars {
-    position: absolute;
-    bottom: 40px;
-    left: 40px;
-    width: 280px;
-    z-index: 110;
-}
-
-.bar-container {
-    margin-bottom: 12px;
-}
-
-.bar-label {
-    font-size: 10px;
-    letter-spacing: 2px;
-    margin-bottom: 4px;
-    color: #fff;
-}
-
-.bar-fill {
-    height: 6px;
-    background: var(--canaa-gold);
-    box-shadow: 0 0 15px var(--canaa-gold);
-    transition: width 0.3s;
-}
-
-#hp-bar { background: var(--canaa-danger); box-shadow: 0 0 15px var(--canaa-danger); }
-#top-bar {
-    position: fixed;
-    top: 15px; left: 15px;
-    width: auto;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    z-index: 5000;
-    pointer-events: none;
-}
-
-#top-right-bar {
-    position: fixed;
-    top: 15px; right: 15px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    z-index: 5000;
-    pointer-events: none;
-}
-
-.icon-btn {
-    width: 52px; height: 52px; /* Slightly larger for touch */
-    background: rgba(10, 20, 25, 0.7);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(0, 255, 204, 0.4);
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: var(--canaa-gold);
-    cursor: pointer;
-    pointer-events: auto !important;
-    transition: all 0.15s;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
-}
-
-.icon-btn:active {
-    transform: scale(0.9);
-    background: var(--canaa-gold);
-    color: #000;
-}
-
-.icon-btn:hover { background: var(--canaa-gold); color: #000; }
-
-.icon-btn svg { width: 24px; height: 24px; }
-
-#pause-btn {
-    position: fixed;
-    top: 20px; right: 20px;
-}
-
-/* --- MOBILE CONTROLS --- */
+/* MOBILE ACTION CLUSTER */
 #mobile-ui {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
     pointer-events: none;
     z-index: 200;
 }
@@ -388,160 +145,183 @@ body {
 .action-btn {
     position: absolute;
     background: rgba(255,255,255,0.05);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.3);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.2);
     border-radius: 50%;
-    color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: #fff;
     pointer-events: auto;
-    box-shadow: 0 0 25px rgba(0,0,0,0.6);
     transition: transform 0.1s;
     user-select: none;
 }
 
-.action-btn svg { width: 50%; height: 50%; opacity: 0.9; }
+.action-btn:active { transform: scale(0.9); background: rgba(0,243,255,0.2); }
+.action-btn svg { width: 50%; height: 50%; }
 
-#fire-btn { width: 95px; height: 95px; right: 30px; bottom: 30px; border: 3px solid var(--canaa-danger); background: rgba(255,0,0,0.15); z-index: 220; }
-#aim-btn { width: 68px; height: 68px; right: 45px; bottom: 150px; z-index: 215; }
-#jump-btn { width: 68px; height: 68px; right: 155px; bottom: 45px; z-index: 215; }
-#swap-btn { width: 56px; height: 56px; right: 245px; bottom: 45px; z-index: 210;}
-#grenade-btn { width: 56px; height: 56px; right: 140px; bottom: 140px; z-index: 210; }
-#smoke-btn { width: 56px; height: 56px; right: 210px; bottom: 140px; z-index: 210; }
+.action-btn.large { width: 95px; height: 95px; bottom: 30px; right: 30px; border: 3px solid rgba(255,0,0,0.4); background: rgba(255,0,0,0.1); }
+.action-btn.med { width: 68px; height: 68px; }
+.action-btn.small { width: 52px; height: 52px; }
+
+#aim-btn { right: 45px; bottom: 150px; }
+#jump-btn { right: 155px; bottom: 45px; }
+#swap-btn { right: 245px; bottom: 45px; }
+#grenade-btn { right: 140px; bottom: 140px; }
+#smoke-btn { right: 210px; bottom: 140px; }
 
 #joystick-zone {
     position: absolute;
     left: 40px; bottom: 40px;
-    width: 140px; height: 140px;
+    width: 150px; height: 150px;
     border-radius: 50%;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.1);
     pointer-events: auto;
-    z-index: 210;
 }
 
 #joystick-knob {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
     width: 60px; height: 60px;
-    background: var(--canaa-gold);
+    background: var(--canaa-blue);
     border-radius: 50%;
-    box-shadow: 0 0 25px var(--canaa-gold);
 }
 
-/* --- OVERLAYS (GAME OVER, WIN, ETC) --- */
-#game-over-screen, #win-screen, #level-complete-screen, #lobby-screen {
+/* TOP RIGHT TACTICAL */
+#top-right-bar {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    backdrop-filter: blur(10px);
-    display: none; /* Controlled by JS */
+    top: 15px; right: 15px;
+    display: flex;
+    gap: 12px;
+    z-index: 5000;
+}
+
+.icon-btn {
+    width: 50px; height: 50px;
+    background: rgba(0,0,0,0.5);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(0,243,255,0.3);
+    border-radius: 50%;
+    display: flex;
     justify-content: center;
     align-items: center;
+    color: var(--canaa-gold);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+#top-bar { position: fixed; top: 15px; left: 15px; z-index: 5000; }
+
+/* LOBBY & MENU */
+#main-menu {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,5,10,0.8);
+    display: flex;
     flex-direction: column;
-    z-index: 10000;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.menu-brand {
+    position: fixed;
+    top: 40px; left: 40px;
+    font-size: 32px;
+    font-weight: 900;
+    color: #fff;
+}
+.menu-brand span { color: var(--canaa-gold); }
+
+#lobby-bottom-nav {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%; height: 80px;
+    background: linear-gradient(0deg, rgba(0,0,0,0.95) 0%, transparent 100%);
+    display: flex;
+    padding: 0 40px;
+    gap: 30px;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    z-index: 1000;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: rgba(255,255,255,0.4);
+    font-family: 'Rajdhani';
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    height: 100%;
+    border-bottom: 3px solid transparent;
+}
+.nav-btn:hover { color: #fff; border-bottom: 3px solid rgba(255,255,255,0.2); }
+.nav-btn.active { color: var(--canaa-blue); border-bottom: 3px solid var(--canaa-blue); }
+
+.start-btn-cod {
+    position: fixed;
+    bottom: 25px; right: 40px;
+    width: 180px; height: 65px;
+    background: var(--canaa-gold);
+    color: #000;
+    border: none;
+    font-family: 'Orbitron';
+    font-weight: 900;
+    font-size: 24px;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+    cursor: pointer;
+    z-index: 1001;
 }
 
 .menu-content {
-    background: rgba(0, 5, 10, 0.95);
-    border: 1px solid var(--panel-border);
-    border-top: 5px solid var(--canaa-gold);
-    border-radius: 12px;
+    background: rgba(10,20,30,0.95);
+    border: 2px solid var(--canaa-blue);
     padding: 25px;
-    width: 340px;
-    max-width: 95%;
-    text-align: center;
-    box-shadow: 0 0 50px rgba(0, 255, 204, 0.1);
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    pointer-events: auto !important;
-    max-height: 90vh;
-    overflow-y: auto;
-    z-index: 15000; /* Ensure on top of EVERYTHING */
-}
-
-#game-over-screen .menu-content { border-top-color: var(--canaa-danger); }
-#win-screen .menu-content { border-top-color: var(--canaa-green); }
-
-.menu-content h1 {
-    font-family: var(--font-display);
-    font-size: 32px;
-    letter-spacing: 4px;
-    margin: 0;
-    color: #fff;
-    text-transform: uppercase;
-}
-
-.menu-content p {
-    font-size: 15px;
-    color: rgba(255,255,255,0.7);
-    margin: 0;
-    font-family: var(--font-body);
+    width: 360px;
+    margin: 0 auto;
 }
 
 .menu-btn {
-    background: rgba(255,255,255,0.05);
+    background: transparent;
     border: 1px solid rgba(255,255,255,0.2);
     color: #fff;
-    padding: 18px;
-    font-family: var(--font-display);
-    font-size: 14px;
+    padding: 12px;
+    font-family: 'Orbitron';
+    width: 100%;
     cursor: pointer;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 6px;
-    font-weight: 700;
-    letter-spacing: 1px;
+    margin-top: 10px;
 }
+.menu-btn:hover { background: #fff; color: #000; }
+.menu-btn.secondary { color: #666; border-color: #333; }
 
-.menu-btn:hover {
-    background: var(--canaa-gold);
-    color: #000;
-    border-color: #fff;
-    transform: translateY(-3px);
-    box-shadow: 0 10px 20px rgba(0, 255, 204, 0.2);
-}
-
-.menu-btn.secondary {
-    background: transparent;
-    border-color: rgba(255,255,255,0.2);
-    color: rgba(255,255,255,0.6);
-}
-
-#rotate-overlay {
+#character-preview-container {
     position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: var(--bg-dark);
-    display: none;
+    left: 10%; top: 20%;
+    width: 400px;
+    height: 60%;
+    pointer-events: none;
+    display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
-    z-index: 1000000;
-    color: var(--canaa-gold);
+    z-index: 500;
 }
 
-.rotate-icon { font-size: 80px; margin-bottom: 20px; }
+#start-view { width: 100%; height: 100%; display: flex; align-items: flex-end; }
 
 /* SVG Global fix */
-svg {
-    display: block;
-    max-width: 100%;
-    max-height: 100%;
-}
+svg { display: block; max-width: 100%; max-height: 100%; }
 
 /* --- RESPONSIVENESS --- */
 @media (max-width: 900px) {
-    .menu-brand { font-size: 48px; }
-    .menu-btn-modern { width: 200px; min-height: 150px; padding: 20px; }
-    .menu-btn-modern .btn-content { font-size: 20px; }
-    #fire-btn { width: 80px; height: 80px; right: 20px; bottom: 20px; }
-    #joystick-zone { width: 120px; height: 120px; left: 20px; bottom: 20px; }
+    .menu-brand { font-size: 28px; top: 20px; left: 20px; }
+    #fire-btn.large { width: 85px; height: 85px; right: 15px; bottom: 15px; }
+    #joystick-zone { width: 130px; height: 130px; left: 15px; bottom: 15px; }
+    .start-btn-cod { width: 140px; height: 50px; font-size: 18px; bottom: 15px; right: 20px; }
+    #lobby-bottom-nav { height: 60px; padding: 0 15px; gap: 12px; }
 }
-
-@media (max-height: 500px) {
-    .menu-header { margin-bottom: 20px; }
-    .menu-brand { font-size: 32px; }
-    .menu-sidebar { gap: 10px; }
-    .menu-btn-modern { width: 180px; min-height: 100px; padding: 15px; }
-    .menu-btn-modern .btn-content { font-size: 16px; }
-}
-

@@ -2173,13 +2173,19 @@ document.addEventListener('DOMContentLoaded', () => {
         function syncMobileUIVisibility() {
             const mUI = document.getElementById('mobile-ui');
             if (mUI) {
-                // Keep mobile UI layer active for Cam/Pause buttons, but hide gameplay controls if paused
                 mUI.style.display = (!isPC) ? 'block' : 'none';
-                const controls = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone'];
-                controls.forEach(id => {
+                
+                // Hide controls but KEEP Cam/Pause icons visible if mobile
+                const gameplayControls = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone'];
+                gameplayControls.forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.style.display = (isPlaying && !gamePaused) ? 'flex' : 'none';
                 });
+
+                // Top Tactical Bar (Cam/Pause) visibility
+                const topBar = document.getElementById('top-right-bar');
+                if (topBar) topBar.style.display = (isPlaying && !gamePaused && !isPC) ? 'flex' : 'none';
+
                 if (mUI.style.display === 'block') window.dispatchEvent(new Event('resize'));
             }
         }
@@ -2259,16 +2265,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 isPlaying = false; 
                 gamePaused = true; 
                 if (document.exitPointerLock) document.exitPointerLock(); 
-                document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
+                document.getElementById('start-view').style.display = 'none'; 
                 document.getElementById('settings-view').style.display = 'flex'; 
                 document.getElementById('main-menu').style.display = 'flex'; 
                 document.getElementById('main-menu').classList.add('paused-mode'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.opacity = '0'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.pointerEvents = 'none'); 
                 syncMobileUIVisibility();
             };
-            pauseBtnEl.addEventListener('click', pauseGameHandler);
-            pauseBtnEl.addEventListener('touchstart', pauseGameHandler, { passive: false });
+            if (pauseBtnEl) {
+                pauseBtnEl.addEventListener('click', pauseGameHandler);
+                pauseBtnEl.addEventListener('touchstart', pauseGameHandler, { passive: false });
+            }
+
+            const camBtnEl = document.getElementById('cam-toggle-btn');
+            if (camBtnEl) {
+                const toggleCamHandler = (e) => {
+                    if (e && e.cancelable) e.preventDefault();
+                    toggleCameraMode();
+                };
+                camBtnEl.addEventListener('click', toggleCamHandler);
+                camBtnEl.addEventListener('touchstart', toggleCamHandler, { passive: false });
+            }
             
             document.getElementById('main-menu').addEventListener('click', (e) => { 
                 if (gamePaused && e.target.id === 'main-menu') { resumeGame(); } 

@@ -3,8 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- FIX IPHONE: Tags para permitir modo Ecrã Inteiro Nativo no iOS (Add to Home Screen) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="mobile-web-app-capable" content="yes">
@@ -13,7 +12,6 @@
     <link rel="icon" href="data:,">
     
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
-
     <link rel="stylesheet" href="styles.css">
     
     <script type="importmap">
@@ -31,237 +29,138 @@
             <div class="start-brand">COMBAT <span>ZONE</span></div>
             <div class="start-season">SEASON CANAA RELOAD</div>
         </div>
-        <div class="press-text">INICIAR</div>
+        <div class="press-text">INICIALIZANDO...</div>
     </div>
     
     <div id="damage-overlay"></div>
     <div id="crosshair"></div>
-    <div id="sniper-scope">
-        <div class="cross-h"></div>
-        <div class="cross-v"></div>
-        <div class="dot-red"></div>
-    </div>
+    <div id="sniper-scope"></div>
     
     <div id="hud">
-        <div id="info-panel" class="info-panel">
-             <span id="weapon-display" style="color:var(--canaa-blue);">WPN: <span id="weapon-name">RIFLE</span> | </span>
-             <span id="lives-display" style="display:inline;">LIVES: <span id="lives-count">5</span> | </span>
-             <span id="grenade-display" style="color:#ffaa00;">G: <span id="grenade-count">6</span></span>
-             <span id="smoke-display" style="color:#aaa;">| S: <span id="smoke-count">6</span></span>
-             | <span id="pvp-timer-display" style="display:none;">TIME: <span id="pvp-timer-count">04:00</span> | </span>
-             LVL: <span id="level-display">1</span>/10 | KILLS: <span id="score">0</span>
+        <!-- TOP TACTICAL INFO -->
+        <div id="top-center-stats" class="hud-center-top">
+            <span id="pvp-timer-display" style="display:none;">TIME: <span id="pvp-timer-count">04:00</span></span>
+            <div id="compass">N | NW | W | SW | S | SE | E | NE | N</div>
         </div>
-        <div id="status-bars">
-             <div class="bar-container">
-                 <div class="bar-label">ARMOR <span id="armor">0</span></div>
-                 <div id="armor-bar" class="bar-fill"></div>
-             </div>
-             <div class="bar-container">
-                 <div class="bar-label">HP <span id="hp">100</span></div>
-                 <div id="hp-bar" class="bar-fill"></div>
-             </div>
+
+        <!-- BOTTOM HUD (CODM STYLE) -->
+        <div id="bottom-hud">
+            <div id="status-group">
+                <div class="hud-status-bar">
+                    <div class="bar-label">ARMOR <span id="armor">0</span></div>
+                    <div id="armor-bar" class="bar-fill blue" style="width:0%;"></div>
+                </div>
+                <div class="hud-status-bar">
+                    <div class="bar-label">HP <span id="hp">100</span></div>
+                    <div id="hp-bar" class="bar-fill red" style="width:100%;"></div>
+                </div>
+            </div>
+
+            <div id="weapon-group">
+                <div id="weapon-icon">▄︻デ══━一</div>
+                <div id="ammo-info">RIFLE | <span id="grenade-count">6</span>G</div>
+            </div>
+            
+            <div id="score-group">
+                LVL <span id="level-display">1</span> | KILLS <span id="score">0</span>
+            </div>
         </div>
-        <div id="multiplayer-status">ONLINE: <span id="mp-count">0</span> PLAYERS | ROOM: <span id="room-id">...</span></div>
-        <div id="master-status">★ ROOM HOST</div>
-        <div id="level-indicator">LEVEL 1</div>
     </div>
 
-    <button id="save-hud-btn" style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 99999; padding: 10px 30px; background: var(--canaa-gold); border: none; border-radius: 5px; font-weight: bold; display: none; font-family: 'Orbitron'; font-size: 14px; cursor: pointer; pointer-events: auto !important; color: black;">SAVE POSITIONS</button>
+    <!-- MOBILE TACTICAL HUD -->
+    <div id="mobile-ui" style="display: none;">
+        <div id="joystick-zone">
+            <div id="joystick-knob"></div>
+        </div>
+        
+        <div id="aim-zone"></div>
 
-    <div id="rotate-overlay">
-        <div class="rotate-icon">📱</div>
-        <p>ROTATE DEVICE TO PLAY</p>
-    </div>
-    
-    <div id="qr-popup" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:500; flex-direction:column; justify-content:center; align-items:center;">
-        <div style="background:#111; padding:20px; border:2px solid #00FF41; border-radius:10px; text-align:center; max-width:90%;">
-            <h2 style="color:#00FF41; margin-top:0;">SCAN TO JOIN</h2>
-            <img id="qr-image" src="" alt="QR Code" style="border:5px solid white; border-radius:5px; margin-bottom:15px;">
-            <p style="color:#ccc; font-size:12px; margin-bottom:15px; word-break: break-all; user-select: text;" id="qr-link-text"></p>
-            <button class="menu-btn" onclick="document.getElementById('qr-popup').style.display='none'">CLOSE</button>
+        <!-- CODM ACTION CLUSTER (BOTTOM RIGHT) -->
+        <div id="action-cluster">
+            <div id="fire-btn" class="action-btn large">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M4 10h12l2 2v2l-2 2H4l2-2v-2l-2-2zM10 16v3l-2 2M18 12h3a1 1 0 0 1 1 1v0a1 1 0 0 1-1 1h-3M14 10V8a2 2 0 0 0-2-2H8"></path></svg>
+            </div>
+            <div id="aim-btn" class="action-btn med">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line></svg>
+            </div>
+            <div id="jump-btn" class="action-btn med">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M12 19V5m-7 7l7-7 7 7"></path></svg>
+            </div>
+            <div id="swap-btn" class="action-btn med">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 16V4m0 0L3 8m4-4l4 4m6-4v12m0 0l4-4m-4 4l-4 4"></path></svg>
+            </div>
+            <div id="grenade-btn" class="action-btn small">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 0a4 4 0 0 0-4 4v8a4 4 0 0 0 8 0v-8a4 4 0 0 0-4-4z"></path></svg>
+            </div>
+            <div id="smoke-btn" class="action-btn small">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17.5 19a5.5 5.5 0 0 1-1.5-10.8c.1-.8 0-1.6-.4-2.3a4.5 4.5 0 0 0-8.2 2.2a5.5 5.5 0 0 0-1.5 10.9h11.6z"></path></svg>
+            </div>
+        </div>
+
+        <div id="top-right-bar">
+            <div id="cam-toggle-btn" class="icon-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+            </div>
+            <div id="pause-btn" class="icon-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
         </div>
     </div>
 
     <div id="main-menu">
-        <div class="menu-header">
-            <div class="menu-brand">COMBAT <span>ZONE</span></div>
-            <div class="menu-season">SEASON CANAA RELOAD</div>
-        </div>
-        
-        <div class="menu-sidebar" id="start-view">
-            <button class="menu-btn-modern primary" id="play-btn">
-                <div class="btn-content">SINGLE PLAYER</div>
-                <span class="btn-sub">START OPERATION SOLO</span>
-            </button>
-            <button class="menu-btn-modern" id="multiplayer-btn">
-                <div class="btn-content">MULTIPLAYER</div>
-                <span class="btn-sub">RANKED PVP COMBAT</span>
-            </button>
-            <button class="menu-btn-modern" id="coop-btn">
-                <div class="btn-content">CO-OP PVE</div>
-                <span class="btn-sub">ZOMBIE SURVIVAL</span>
-            </button>
-            <button class="menu-btn-modern" id="invite-btn">
-                <div class="btn-content">INVITE SQUAD</div>
-                <span class="btn-sub">COORDINATE ONLINE</span>
-            </button>
-            <button class="menu-btn-modern" id="settings-btn">
-                <div class="btn-content">LOADOUT</div>
-                <span class="btn-sub">SYSTEM SETTINGS</span>
-            </button>
-        </div>
-
-        <!-- NEW: Settings View integrated into Menu -->
-        <div class="menu-content" id="settings-view" style="display: none;">
-            <h2 style="margin: 0; color: var(--canaa-gold); font-size: 1.2rem;">OPERATIONAL SETTINGS</h2>
+        <div class="menu-brand">CANAAN <span>RELOADED</span></div>
+        <div id="start-view">
+            <div id="character-preview-container">
+                <!-- Character info or 3D preview will be shown here -->
+            </div>
             
-            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%; text-align: left;">
-                <div class="setting-row">
-                    <label>MASTER VOLUME</label>
-                    <input type="range" id="vol-slider" min="0" max="100" value="50">
-                </div>
-                <div class="setting-row">
-                    <label>FIELD OF VIEW</label>
-                    <input type="range" id="fov-slider" min="50" max="110" value="70">
-                </div>
-                <div class="setting-row">
-                    <label>TOUCH SENSITIVITY</label>
-                    <input type="range" id="sens-slider" min="1" max="100" value="50">
-                </div>
-                <div class="setting-row">
-                    <label>GRAPHICS QUALITY</label>
-                    <select id="graphics-select">
-                        <option value="high">HIGH (FX ON)</option>
-                        <option value="low" selected>LOW (FAST)</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <label>UNIT SKIN</label>
-                    <select id="skin-select">
-                        <option value="ninja">STEALTH (CYAN)</option>
-                        <option value="soldier">INFANTRY (GOLD)</option>
-                    </select>
-                </div>
-            </div>
+            <button class="start-btn-cod" id="play-btn">START</button>
 
-            <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="menu-btn" id="edit-hud-btn" style="flex: 1;">CUSTOM HUD</button>
-                <button class="menu-btn" id="back-btn" style="flex: 1;">BACK</button>
+            <div id="lobby-bottom-nav">
+                <button class="nav-btn active" id="multiplayer-btn">PVP RANKED</button>
+                <button class="nav-btn" id="coop-btn">ZOMBIES</button>
+                <button class="nav-btn" id="settings-btn">LOADOUT</button>
+                <button class="nav-btn" id="invite-btn">FRIENDS</button>
             </div>
-            <button class="menu-btn secondary" id="abort-mission-btn" style="width: 100%; border-color: var(--canaa-danger); color: var(--canaa-danger);">ABORT MISSION</button>
-        </div>
-        
-        <div class="controls-group" id="menu-utils">
-            <button class="action-btn" id="mobile-fs-btn" style="width: 50px; height: 50px; border-radius: 50%;">FS</button>
-            <button class="action-btn" id="mobile-exit-btn" style="width: 50px; height: 50px; border-radius: 50%; border-color: var(--canaa-danger);">X</button>
         </div>
 
-        <div class="menu-footer">CANAAN ENGINE &nbsp;|&nbsp; PERSISTENT COMBAT &nbsp;|&nbsp; 2026</div>
+        <div class="menu-content" id="settings-view" style="display: none;">
+            <h2 style="color: var(--canaa-gold); margin: 0 0 20px 0;">LOADOUT & SYSTEM</h2>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 15px; width: 100%;">
+                <div class="setting-row"><label>SENSITIVITY</label><input type="range" id="sens-slider" min="1" max="100" value="50"></div>
+                <div class="setting-row"><label>GRAPHICS</label><select id="graphics-select"><option value="high">ULTRA</option><option value="low" selected>PERFORMANCE</option></select></div>
+                <div class="setting-row"><label>SKIN</label><select id="skin-select"><option value="ninja">STEALTH</option><option value="soldier">ELITE</option></select></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="menu-btn" id="back-btn">BACK</button>
+                <button class="menu-btn secondary" id="abort-mission-btn">EXIT</button>
+            </div>
+        </div>
     </div>
 
     <div id="lobby-screen" style="display: none;">
-        <div class="menu-content" style="border-color: #00f3ff; width: 300px; max-width: 90%;">
-            <h1 id="lobby-title" style="color: #00f3ff; margin: 0;">LOBBY</h1>
-            <div style="font-family: 'Rajdhani'; color: #aaa; margin-bottom: 10px;">Status: <span id="connection-status" style="color: #ffff00">Aguardando oponente...</span></div>
-            <div style="text-align: left; margin-bottom: 5px; color: #fff;">Operators:</div>
-            <div id="lobby-player-list">
-                <div style="color: #666; font-style: italic; padding: 10px; text-align: center;">Searching signal...</div>
-            </div>
-            <div id="pvp-level-selection" style="margin-top: 10px; display: none;">
-                <label style="color: #fff; font-family: 'Rajdhani';">SELECT MAP:</label>
-                <select id="pvp-level-select" style="background: #000; color: #00f3ff; border: 1px solid #00f3ff; font-family: 'Rajdhani'; padding: 5px; width: 100%; margin-top: 5px;">
-                    <option value="1">LEVEL 1 - CONCRETE</option>
-                    <option value="2">LEVEL 2 - MARS</option>
-                    <option value="3">LEVEL 3 - NIGHT OPS</option>
-                    <option value="4">LEVEL 4 - RED ALERT</option>
-                    <option value="5">LEVEL 5 - ALIEN</option>
-                    <option value="6">LEVEL 6 - INDUSTRIAL</option>
-                    <option value="7">LEVEL 7 - LAB</option>
-                    <option value="8">LEVEL 8 - BUNKER</option>
-                    <option value="9">LEVEL 9 - VOID</option>
-                    <option value="10">LEVEL 10 - OPEN ARENA (NEW)</option>
-                </select>
-            </div>
-            <div id="connection-log" style="display: none;"></div>
-            <button class="menu-btn" id="start-mp-btn" style="margin-top: 15px; border-color: #00f3ff; color: #00f3ff;">START</button>
+        <div class="menu-content">
+            <h1 id="lobby-title">LOBBY</h1>
+            <div id="lobby-player-list"></div>
+            <button class="menu-btn" id="start-mp-btn">START MATCH</button>
             <button class="menu-btn secondary" id="lobby-back-btn">BACK</button>
         </div>
     </div>
 
     <div id="game-over-screen" style="display: none;">
-        <div class="menu-content" style="border-color: #ff0000;">
-            <h1 style="color: #ff3333; margin: 0;">SIGNAL LOST</h1>
-            <p style="color: #ccc; font-family: 'Rajdhani';">Agent Eliminated.</p>
-            <button class="menu-btn" id="retry-btn" style="border-color: #ff3333; color: #ff3333;">RETRY</button>
-            <button class="menu-btn secondary" id="menu-return-btn">MENU</button>
-        </div>
-    </div>
-    
-    <div id="level-complete-screen" style="display: none;">
-        <div class="menu-content" style="border-color: var(--canaa-gold);">
-            <h1 style="color: var(--canaa-gold); margin: 0;">SECURE AREA</h1>
-            <p style="color: #ccc; font-family: 'Rajdhani'; margin: 20px 0;">Level Completed.</p>
-            <button class="menu-btn" id="continue-btn" style="border-color: var(--canaa-gold); color: #fff; background: rgba(255,215,0,0.2);">NEXT LEVEL</button>
+        <div class="menu-content" style="border-top-color: var(--canaa-danger);">
+            <h1 style="color: var(--canaa-danger);">ELIMINATED</h1>
+            <button class="menu-btn" id="retry-btn">REDEPLOY</button>
+            <button class="menu-btn secondary" id="menu-return-btn">QUIT</button>
         </div>
     </div>
     
     <div id="win-screen" style="display: none;">
-        <div class="menu-content">
-            <h1 style="color: var(--canaa-green); margin: 0;">MISSION ACCOMPLISHED</h1>
-            <div id="victory-stats" style="margin: 15px 0; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 5px; min-width: 200px;">
-                <h3 style="color: var(--canaa-gold); margin-top: 0; font-size: 14px;">PLACAR FINAL</h3>
-                <div id="victory-player-list" style="text-align: left; font-size: 12px; max-height: 150px; overflow-y: auto;"></div>
-            </div>
-            <button class="menu-btn" id="win-retry-btn">NEW OPERATION</button>
-            <button class="menu-btn secondary" id="win-menu-btn">MENU</button>
-        </div>
-    </div>
-
-    <div id="mobile-ui">
-        <div id="joystick-zone">
-            <div id="joystick-knob"></div>
-        </div>
-        <div id="aim-zone"></div>
-        <div id="fire-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="60" height="60" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 10h12l2 2v2l-2 2H4l2-2v-2l-2-2z"></path>
-                <path d="M10 16v3l-2 2"></path>
-                <path d="M18 12h3a1 1 0 0 1 1 1v0a1 1 0 0 1-1 1h-3"></path>
-                <path d="M14 10V8a2 2 0 0 0-2-2H8"></path>
-            </svg>
-        </div>
-        <div id="jump-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5m-7 7l7-7 7 7"></path></svg>
-        </div>
-        <div id="aim-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><line x1="12" y1="2" x2="12" y2="22"></line><circle cx="12" cy="12" r="3"></circle></svg>
-        </div>
-        <div id="swap-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4m6-4v12m0 0l4-4m-4 4l-4 4"></path></svg>
-        </div>
-        <div id="grenade-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4m0 0a4 4 0 0 0-4 4v8a4 4 0 0 0 8 0v-8a4 4 0 0 0-4-4z"></path><path d="M8 10h8m-8 4h8m-8 4h8"></path><path d="M12 2c2 0 3 1 3 2s-1 2-3 2"></path></svg>
-        </div>
-        <div id="smoke-btn" class="action-btn">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a5.5 5.5 0 0 1-1.5-10.8c.1-.8 0-1.6-.4-2.3a4.5 4.5 0 0 0-8.2 2.2a5.5 5.5 0 0 0-1.5 10.9h11.6z"></path></svg>
-        </div>
-    </div>
-
-    <div id="top-bar">
-        <div id="mode-switch-btn" class="icon-btn">
-            <!-- Dynamically filled with SVG -->
-        </div>
-        <div id="fullscreen-btn" class="icon-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
-        </div>
-    </div>
-
-    <div id="top-right-bar">
-        <div id="cam-toggle-btn" class="icon-btn">
-            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
-        </div>
-        <div id="pause-btn" class="icon-btn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        <div class="menu-content" style="border-top-color: var(--canaa-green);">
+            <h1 style="color: var(--canaa-green);">VICTORY</h1>
+            <div id="victory-stats"></div>
+            <button class="menu-btn" id="win-retry-btn">NEXT MISSION</button>
+            <button class="menu-btn secondary" id="win-menu-btn">QUIT</button>
         </div>
     </div>
 

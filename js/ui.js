@@ -9,7 +9,6 @@ export function setupMinimap() {
     minimapCanvas.width = 100; 
     minimapCanvas.height = 100; 
     minimapCanvas.className = 'minimap-container'; 
-    minimapCanvas.style.cssText = "position:fixed; top:75px; right:20px; background:rgba(0,0,0,0.4); backdrop-filter:blur(5px); pointer-events:auto; z-index:110; border:1px solid var(--panel-border); border-radius:4px; transform: scale(0.9);"; 
     document.body.appendChild(minimapCanvas); 
     minimapCtx = minimapCanvas.getContext('2d', { willReadFrequently: true }); 
 }
@@ -63,12 +62,12 @@ export function drawMinimap(state) {
 export function updateTimerUI(pvpTimer) { 
     const mins = Math.floor(pvpTimer / 60); 
     const secs = pvpTimer % 60; 
-    const display = document.getElementById('pvp-timer-count'); 
+    const display = document.getElementById('tactical-timer'); 
     if (display) display.innerText = mins.toString().padStart(2, '0') + ":" + secs.toString().padStart(2, '0'); 
 }
 
 export function updateWeaponUI(currentWeapon) {
-    const wpnDisplay = document.getElementById('weapon-name'); 
+    const wpnDisplay = document.getElementById('weapon-display'); 
     if (wpnDisplay) { wpnDisplay.innerText = currentWeapon === 1 ? "SNIPER" : "RIFLE"; } 
 }
 
