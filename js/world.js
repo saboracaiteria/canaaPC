@@ -102,7 +102,8 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
         roughness: 0.7, 
         metalness: level >= 3 ? 0.8 : 0.1,
         emissive: level === 3 ? 0x00ff41 : (level === 5 ? 0xff00ff : 0x000000),
-        emissiveIntensity: 0.05
+        emissiveIntensity: 0.05,
+        side: THREE.DoubleSide
     }); 
     const isPVP = isMultiplayerMode && !isCoopMode; 
     const isOpenLevel = isPVP; 
@@ -119,7 +120,12 @@ export function createWorld(level, activeTextures, isMultiplayerMode, isCoopMode
     rampGeo.center(); 
     rampGeo.translate(0, 3, 0); 
     
-    const rampMat = new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.9, map: floorTexture, side: THREE.DoubleSide }); 
+    const rampMat = new THREE.MeshStandardMaterial({ 
+        color: 0x555555, 
+        roughness: 0.9, 
+        map: floorTexture, 
+        side: THREE.DoubleSide 
+    }); 
     const wallRNG = mulberry32(level * 777); 
     
     if (isOpenLevel) { 

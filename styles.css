@@ -99,19 +99,17 @@ body {
 
 .info-panel {
     position: fixed;
-    top: 75px;
+    top: 75px; /* Offset from top icons */
     left: 15px;
-    padding: 8px 12px;
-    background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-    border: 1px solid var(--panel-border);
-    border-radius: 4px;
+    background: rgba(0, 5, 10, 0.4);
+    backdrop-filter: blur(8px);
+    padding: 6px 12px;
+    border-left: 3px solid var(--canaa-gold);
+    font-family: var(--font-display);
     font-size: 11px;
-    letter-spacing: 1px;
-    color: #fff;
     z-index: 105;
     pointer-events: none;
-    font-family: var(--font-body);
+    border-radius: 0 4px 4px 0;
 }
 
 #status-bars {
@@ -332,31 +330,31 @@ body {
     top: 15px; left: 15px;
     width: auto;
     display: flex;
-    gap: 15px;
+    gap: 12px;
     align-items: center;
-    z-index: 500;
+    z-index: 5000; /* Higher priority */
     pointer-events: none;
 }
 
 #pause-btn {
     position: fixed;
     top: 15px; right: 15px;
-    z-index: 500;
+    z-index: 5000;
 }
 
 .icon-btn {
-    width: 44px; height: 44px;
-    background: rgba(0,0,0,0.4);
+    width: 48px; height: 48px;
+    background: rgba(10, 20, 25, 0.7);
     backdrop-filter: blur(5px);
-    border: 1px solid var(--panel-border);
-    border-radius: 8px;
-    color: var(--canaa-gold);
+    border: 1px solid rgba(0, 255, 204, 0.3);
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+    color: var(--canaa-gold);
     cursor: pointer;
-    pointer-events: auto;
-    transition: all 0.2s;
+    pointer-events: auto !important;
+    transition: all 0.15s;
 }
 
 .icon-btn:hover { background: var(--canaa-gold); color: #000; }
@@ -397,10 +395,17 @@ body {
 #fire-btn { width: 95px; height: 95px; right: 30px; bottom: 30px; border: 3px solid var(--canaa-danger); background: rgba(255,0,0,0.15); z-index: 220; }
 #aim-btn { width: 68px; height: 68px; right: 45px; bottom: 150px; z-index: 215; }
 #jump-btn { width: 68px; height: 68px; right: 155px; bottom: 45px; z-index: 215; }
-#swap-btn { width: 56px; height: 56px; right: 245px; bottom: 45px; }
-#cam-toggle-btn { width: 50px; height: 50px; left: 20px; top: 20px; z-index: 300; background: var(--bg-dark); }
-#grenade-btn { width: 56px; height: 56px; right: 140px; bottom: 140px; }
-#smoke-btn { width: 56px; height: 56px; right: 210px; bottom: 140px; }
+#swap-btn { width: 56px; height: 56px; right: 245px; bottom: 45px; z-index: 210;}
+#cam-toggle-btn { 
+    width: 50px; height: 50px; 
+    right: 315px; bottom: 45px; /* Moved to action area */
+    z-index: 300; 
+    background: rgba(10, 20, 25, 0.8);
+    border: 1px solid var(--canaa-gold);
+    color: var(--canaa-gold);
+}
+#grenade-btn { width: 56px; height: 56px; right: 140px; bottom: 140px; z-index: 210; }
+#smoke-btn { width: 56px; height: 56px; right: 210px; bottom: 140px; z-index: 210; }
 
 #joystick-zone {
     position: absolute;
@@ -434,19 +439,22 @@ body {
 }
 
 .menu-content {
-    background: rgba(10, 20, 25, 0.95);
+    background: rgba(0, 5, 10, 0.95);
     border: 1px solid var(--panel-border);
     border-top: 5px solid var(--canaa-gold);
     border-radius: 12px;
-    padding: 40px;
-    width: 360px;
-    max-width: 90%;
+    padding: 25px;
+    width: 340px;
+    max-width: 95%;
     text-align: center;
-    box-shadow: 0 40px 100px rgba(0,0,0,0.9);
+    box-shadow: 0 0 50px rgba(0, 255, 204, 0.1);
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 15px;
     pointer-events: auto !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    z-index: 15000; /* Ensure on top of EVERYTHING */
 }
 
 #game-over-screen .menu-content { border-top-color: var(--canaa-danger); }

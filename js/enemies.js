@@ -277,20 +277,23 @@ export function updateEnemies(dt, {
             e.userData.groundCheckFrame = (e.userData.groundCheckFrame || 0) + 1;
             if (e.userData.groundCheckFrame % 3 === 0) {
                 let botGroundY = 0; 
-                _botPos.set(e.position.x, e.position.y + 2, e.position.z);
+                _botPos.set(e.position.x, e.position.y + 4, e.position.z); // Start higher to catch ground even if clipping slightly
                 _botDownRay.set(_botPos, _downVec);
-                _botDownRay.far = 10;
-                const rampHits = _botDownRay.intersectObjects(envNodes, false); 
-                if (rampHits.length > 0 && rampHits[0].point.y > botGroundY) { botGroundY = rampHits[0].point.y; }
+                _botDownRay.far = 15;
+                const rampHits = _botDownRay.intersectObjects(envNodes, true); 
+                if (rampHits.length > 0) { botGroundY = rampHits[0].point.y; }
                 e.userData.lastKnownGroundY = botGroundY;
             }
             const botGroundY = e.userData.lastKnownGroundY || 0;
             const isDrone = e.userData.type === 'drone';
             
             if (isDrone) {
-                const hoverY = botGroundY + 3.0 + Math.sin(now * 0.005) * 0.5;
+                const hoverY = botGroundY + 3.0 + Math.sin(now * 0.005) * 0.4;
+                // Immediate lift if floor is above drone
+                if (e.position.y < botGroundY + 0.5) e.position.y = botGroundY + 0.5;
                 e.position.y = THREE.MathUtils.lerp(e.position.y, hoverY, 0.1);
                 e.userData.isGrounded = true;
+                e.userData.velocityY = 0;
                 if (e.userData.ring) e.userData.ring.rotation.z += 0.2;
             } else {
                 if (e.position.y <= botGroundY + 0.05) { e.position.y = botGroundY + 0.05; e.userData.velocityY = 0; e.userData.isGrounded = true; } else { e.userData.isGrounded = false; }
@@ -383,7 +386,15 @@ export function updateEnemies(dt, {
                         _losRay.set(_sp, _enemyDir); 
                         _losRay.far = distToTarget;
                         const hits = _losRay.intersectObjects(envNodes, true); 
-                        hasLOS = (hits.length === 0);
+                        
+                        // Strict check: No hits between bot and player
+                        hasLOS = true;
+                        if (hits.length > 0) {
+                            // If first hit is very close, bot is likely inside a wall firing out
+                            // Since we have DoubleSide, it should hit the backface if they are looking out
+                            if (hits[0].distance < distToTarget - 0.5) hasLOS = false;
+                        }
+                        
                         e.userData.lastHasLOS = hasLOS;
                     }
                     

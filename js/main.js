@@ -1943,8 +1943,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('lobby-screen').style.display = 'none';
                 
                 // Ensure menu elements are hidden
-                document.querySelectorAll('.menu-header, .char-info, .menu-sidebar').forEach(el => {
+                document.querySelectorAll('.menu-header, .menu-sidebar, #settings-view').forEach(el => {
                     if (el) el.style.opacity = '0';
+                    if (el) el.style.pointerEvents = 'none';
                 });
                 
                 isMultiplayerMode = (mode === 'multi' || mode === 'coop'); 
@@ -2114,19 +2115,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const resumeGame = () => { 
             document.getElementById('settings-view').style.display = 'none'; 
+            document.getElementById('start-view').style.display = 'flex';
             document.getElementById('main-menu').style.display = 'none'; 
             document.getElementById('hud').style.display = 'block'; 
             document.getElementById('crosshair').style.display = 'block'; 
-            syncMobileUIVisibility();
-            document.getElementById('main-menu').classList.remove('paused-mode'); 
-            document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '1'); 
-            document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'auto'); 
             isPlaying = true; 
             gamePaused = false; 
+            syncMobileUIVisibility();
+            document.getElementById('main-menu').classList.remove('paused-mode'); 
+            document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.opacity = '1'); 
+            document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.pointerEvents = 'auto'); 
             if (isPC) { 
                 try { 
-                    const promise = document.body.requestPointerLock(); 
-                    if (promise) { promise.catch(err => { }); } 
+                    const promise = document.body.requestPointerLock ? document.body.requestPointerLock() : null; 
+                    if (promise && promise.catch) { promise.catch(err => { }); } 
                 } catch (e) { } 
             } 
         };
@@ -2171,8 +2173,13 @@ document.addEventListener('DOMContentLoaded', () => {
         function syncMobileUIVisibility() {
             const mUI = document.getElementById('mobile-ui');
             if (mUI) {
-                // Show mobile UI only if in mobile mode AND game is active
-                mUI.style.display = (!isPC && isPlaying) ? 'block' : 'none';
+                // Keep mobile UI layer active for Cam/Pause buttons, but hide gameplay controls if paused
+                mUI.style.display = (!isPC) ? 'block' : 'none';
+                const controls = ['fire-btn', 'jump-btn', 'aim-btn', 'swap-btn', 'grenade-btn', 'smoke-btn', 'joystick-zone'];
+                controls.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = (isPlaying && !gamePaused) ? 'flex' : 'none';
+                });
                 if (mUI.style.display === 'block') window.dispatchEvent(new Event('resize'));
             }
         }
@@ -2245,17 +2252,19 @@ document.addEventListener('DOMContentLoaded', () => {
             const pauseBtnEl = document.getElementById('pause-btn');
             const pauseGameHandler = (e) => { 
                 if (e) e.stopPropagation(); 
-                if (e && e.type === 'touchstart') e.preventDefault();
-                if (!isPlaying) return; 
+                if (e && e.type === 'touchstart' && e.cancelable) e.preventDefault();
+                if (gamePaused) { resumeGame(); return; }
+                if (!isPlaying && !gamePaused) return; 
+
                 isPlaying = false; 
                 gamePaused = true; 
                 if (document.exitPointerLock) document.exitPointerLock(); 
-                document.getElementById('settings-view').style.display = 'block'; 
                 document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
-                document.getElementById('main-menu').style.display = 'block'; 
+                document.getElementById('settings-view').style.display = 'flex'; 
+                document.getElementById('main-menu').style.display = 'flex'; 
                 document.getElementById('main-menu').classList.add('paused-mode'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.opacity = '0'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.pointerEvents = 'none'); 
                 syncMobileUIVisibility();
             };
             pauseBtnEl.addEventListener('click', pauseGameHandler);
@@ -2401,14 +2410,16 @@ document.addEventListener('DOMContentLoaded', () => {
             resumeGame,
             jumpForce: JUMP_FORCE,
             onPause: () => { 
+                if (gamePaused) { resumeGame(); return; }
                 isPlaying = false; gamePaused = true; 
                 if (document.exitPointerLock) document.exitPointerLock(); 
-                document.getElementById('settings-view').style.display = 'block'; 
                 document.getElementById('start-view').style.setProperty('display', 'none', 'important'); 
-                document.getElementById('main-menu').style.display = 'block'; 
+                document.getElementById('settings-view').style.display = 'flex'; 
+                document.getElementById('main-menu').style.display = 'flex'; 
                 document.getElementById('main-menu').classList.add('paused-mode'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.opacity = '0'); 
-                document.querySelectorAll('.menu-sidebar, .menu-header, .char-info').forEach(el => el.style.pointerEvents = 'none'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.opacity = '0'); 
+                document.querySelectorAll('.menu-sidebar, .menu-header').forEach(el => el.style.pointerEvents = 'none'); 
+                syncMobileUIVisibility();
             },
             onJump: () => {
                 if (isGrounded) { velocityY = JUMP_FORCE; isGrounded = false; playSound('jump', settings); }
