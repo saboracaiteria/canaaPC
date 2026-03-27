@@ -13,16 +13,19 @@ export function initWorld(settings, onResize) {
     camera.rotation.order = 'YXZ'; 
     scene.add(camera);
 
-    renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }); 
+    renderer = new THREE.WebGLRenderer({ 
+        antialias: settings.graphics !== 'low', 
+        powerPreference: "high-performance",
+        alpha: false
+    }); 
     renderer.setSize(window.innerWidth, window.innerHeight); 
     
-    // PERFORMANCE FIX: Cap pixel ratio to 1.5 on High, and 1.0 on Low. High-DPI screens can kill performance in fullscreen.
-    const maxPR = settings.graphics === 'low' ? 1.0 : 1.5;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPR));
+    // PERFORMANCE FIX: Cap pixel ratio.
+    const maxPR = settings.graphics === 'low' ? 1.0 : (window.devicePixelRatio > 1.5 ? 1.5 : window.devicePixelRatio);
+    renderer.setPixelRatio(maxPR);
     
-    // Respect settings for initial shadow state
     renderer.shadowMap.enabled = settings.graphics !== 'low'; 
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
+    renderer.shadowMap.type = THREE.PCFShadowMap; 
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
