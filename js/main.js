@@ -181,11 +181,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
         function showLobby(mode) {
             cleanupMultiplayer(scene); 
-            document.getElementById("start-view").style.display = "none"; 
-            document.getElementById("lobby-screen").style.display = "flex";
+            const mm = document.getElementById("main-menu");
+            const ls = document.getElementById("lobby-screen");
+            if (mm) mm.style.display = "none"; 
+            if (ls) ls.style.display = "flex";
+            
             const title = document.getElementById("lobby-title");
             const btn = document.getElementById("start-mp-btn");
             if (btn) { btn.style.display = "block"; btn.classList.remove('disabled'); }
+            
             const levelSelectDiv = document.getElementById("pvp-level-selection");
             hasResetLobbyState = false; 
             
@@ -199,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 title.style.color = "#FF00FF"; 
                 btn.style.borderColor = "#FF00FF"; 
                 btn.style.color = "#FF00FF"; 
-                levelSelectDiv.style.display = "none";
+                if (levelSelectDiv) levelSelectDiv.style.display = "none";
                 btn.onclick = () => { 
                     update(ref(db, `${roomPath}/state`), { gameRunning: true, level: 1, kills: 0, enemies: null, kits: null }).catch(() => {}); 
                     resetGame('coop'); 
@@ -2324,11 +2328,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 pauseInviteBtn.addEventListener('touchstart', (e) => { e.preventDefault(); inviteAction(pauseInviteBtn); }, { passive: false });
             }
             
-            setClick('lobby-back-btn', () => {  
+            setupModeBtn('lobby-back-btn', () => {  
                 const ls = document.getElementById('lobby-screen'); if (ls) ls.style.display = 'none'; 
-                const sv = document.getElementById('start-view'); if (sv) {
-                    sv.style.removeProperty('display'); 
-                    sv.style.display = 'flex';
+                const mm = document.getElementById('main-menu'); if (mm) {
+                    mm.style.display = 'flex';
                 }
             });
             
