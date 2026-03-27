@@ -95,7 +95,7 @@ export function applyGraphicsSettings(quality, { settings, renderer, scene, muzz
         if (muzzleFlashLight) muzzleFlashLight.visible = false; 
     } else { 
         renderer.shadowMap.enabled = true; 
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5)); 
         scene.traverse(child => { if (child.isMesh && child.material && child.material.map) { child.material.map.generateMipmaps = true; } }); 
         if (muzzleFlashLight) muzzleFlashLight.visible = true; 
     }

@@ -14,8 +14,13 @@ export function initWorld(settings, onResize) {
 
     renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" }); 
     renderer.setSize(window.innerWidth, window.innerHeight); 
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); 
-    renderer.shadowMap.enabled = true; 
+    
+    // PERFORMANCE FIX: Cap pixel ratio to 1.5 on High, and 1.0 on Low. High-DPI screens can kill performance in fullscreen.
+    const maxPR = settings.graphics === 'low' ? 1.0 : 1.5;
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPR));
+    
+    // Respect settings for initial shadow state
+    renderer.shadowMap.enabled = settings.graphics !== 'low'; 
     renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
     renderer.outputColorSpace = THREE.SRGBColorSpace; 
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -29,8 +34,8 @@ export function initWorld(settings, onResize) {
     const sun = new THREE.DirectionalLight(0xffffff, 1.8); 
     sun.position.set(50, 100, 50); 
     sun.castShadow = true; 
-    sun.shadow.mapSize.width = 2048; 
-    sun.shadow.mapSize.height = 2048; 
+    sun.shadow.mapSize.width = 1024; 
+    sun.shadow.mapSize.height = 1024; 
     sun.shadow.camera.near = 0.5; 
     sun.shadow.camera.far = 500; 
     sun.shadow.camera.left = -100; 

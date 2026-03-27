@@ -127,7 +127,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 laserMat: new THREE.LineBasicMaterial({ color: 0xff0000, linewidth: 2 }),
                 bulletGeo: new THREE.SphereGeometry(0.1, 4, 4),
                 bulletLocalMat: new THREE.MeshBasicMaterial({ color: 0x00FF41 }),
-                bulletRemoteMat: new THREE.MeshBasicMaterial({ color: 0xff0000 })
+                bulletRemoteMat: new THREE.MeshBasicMaterial({ color: 0xff0000 }),
+                tracerHighGeo: new THREE.CylinderGeometry(0.02, 0.02, 1.5, 6),
+                tracerLowGeo: new THREE.CylinderGeometry(0.02, 0.02, 0.6, 6),
+                tracerSniperMat: new THREE.MeshBasicMaterial({ color: 0xffdd44, transparent: true, opacity: 0.6 }),
+                tracerRifleMat: new THREE.MeshBasicMaterial({ color: 0x00f3ff, transparent: true, opacity: 0.6 })
             };
         }
 
@@ -729,9 +733,9 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!dir) { camera.getWorldDirection(d); }
             
             // Tracer Effect
-            const tracerColor = isSniper ? 0xffdd44 : 0x00f3ff;
-            const tracerGeo = new THREE.CylinderGeometry(0.02, 0.02, isSniper ? 1.5 : 0.6, 6);
-            const tracerMat = new THREE.MeshBasicMaterial({ color: tracerColor, transparent: true, opacity: 0.6 });
+            if (!sharedMats) initSharedMaterials();
+            const tracerGeo = isSniper ? sharedMats.tracerHighGeo : sharedMats.tracerLowGeo;
+            const tracerMat = isSniper ? sharedMats.tracerSniperMat : sharedMats.tracerRifleMat;
             const tracer = new THREE.Mesh(tracerGeo, tracerMat);
             tracer.rotation.x = Math.PI / 2;
             b.add(tracer);
