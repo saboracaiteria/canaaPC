@@ -1384,6 +1384,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (scene && camera && renderer) renderer.render(scene, camera);
         }
 
+        function setClick(id, handler) {
+            const el = document.getElementById(id);
+            if (el) {
+                el.onclick = (e) => {
+                    e.stopPropagation();
+                    handler();
+                };
+            }
+        }
+
         function init() {
             if (window.gameStartedFlag) return;
             window.gameStartedFlag = true;
