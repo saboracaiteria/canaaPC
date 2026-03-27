@@ -2252,29 +2252,55 @@ document.addEventListener('DOMContentLoaded', () => {
                 modeBtn.addEventListener('click', toggleMode);
                 modeBtn.addEventListener('touchstart', toggleMode, { passive: false });
             }
-            const setClick = (id, fn) => { const el = document.getElementById(id); if (el) el.onclick = fn; };
-            const safeAdd = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
-
-            setClick('play-btn', () => { resetGame('single'); }); 
-            setClick('multiplayer-btn', () => showLobby('pvp')); 
-            setClick('coop-btn', () => showLobby('coop'));
-            
-            const fsHandler = (e) => {
-                if (e && e.cancelable) e.preventDefault();
-                goFullscreen();
+            const setupModeBtn = (id, fn) => {
+                const el = document.getElementById(id);
+                if (el) {
+                    const handler = (e) => {
+                        if (e && e.cancelable) e.preventDefault();
+                        if (e) e.stopPropagation();
+                        fn();
+                    };
+                    el.addEventListener('click', handler);
+                    el.addEventListener('touchstart', handler, { passive: false });
+                }
             };
-            
-            safeAdd('fullscreen-btn', 'click', fsHandler);
-            safeAdd('fullscreen-btn', 'touchstart', fsHandler, { passive: false });
-            setClick('mobile-fs-btn', fsHandler);
 
-            setClick('mobile-exit-btn', () => {
-                window.close();
-                setTimeout(() => window.location.href = "about:blank", 100);
+            setupModeBtn('play-btn', () => resetGame('single')); 
+            setupModeBtn('multiplayer-btn', () => showLobby('pvp')); 
+            setupModeBtn('coop-btn', () => showLobby('coop'));
+            setupModeBtn('invite-btn', () => inviteAction(document.getElementById('invite-btn')));
+            
+            // Footer Tabs
+            setupModeBtn('home-tab', () => {
+                // Already home, maybe reset view
+                const sv = document.getElementById('start-view');
+                const st = document.getElementById('settings-view');
+                if (sv) sv.style.display = 'flex';
+                if (st) st.style.display = 'none';
+            });
+            setupModeBtn('loadout-tab', () => {
+                // Not implemented yet, show a hint
+                alert("LOADOUT coming soon in Season 2");
+            });
+            setupModeBtn('extras-tab', () => {
+                window.open('https://github.com/saboracaiteria/canaaPC', '_blank');
+            });
+            setupModeBtn('exit-btn', () => {
+                if (confirm("Exit game?")) {
+                    location.reload();
+                }
+            });
+            
+            const fsHandler = () => goFullscreen();
+            setupModeBtn('fullscreen-btn', fsHandler);
+            setupModeBtn('mobile-fs-btn', fsHandler);
+            setupModeBtn('mobile-exit-btn', () => {
+                if(confirm("Exit App?")) {
+                    window.close();
+                    setTimeout(() => window.location.href = "about:blank", 100);
+                }
             });
 
-            setClick('invite-btn', () => inviteAction(document.getElementById('invite-btn'))); 
-            
             const pauseInviteBtn = document.getElementById('pause-invite-btn'); 
             if (pauseInviteBtn) {
                 pauseInviteBtn.addEventListener('click', () => inviteAction(pauseInviteBtn));
