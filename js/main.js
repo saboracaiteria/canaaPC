@@ -1942,6 +1942,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!isPC) document.getElementById('mobile-ui').style.display = 'block'; 
                 document.getElementById('lobby-screen').style.display = 'none';
                 
+                // Ensure menu elements are hidden
+                document.querySelectorAll('.menu-header, .char-info, .menu-sidebar').forEach(el => {
+                    if (el) el.style.opacity = '0';
+                });
+                
                 isMultiplayerMode = (mode === 'multi' || mode === 'coop'); 
                 isCoopMode = (mode === 'coop');
                 

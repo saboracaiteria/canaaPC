@@ -88,30 +88,45 @@ body {
     z-index: 100;
 }
 
+#aim-zone {
+    position: fixed;
+    top: 0; right: 0;
+    width: 60%; height: 100%;
+    pointer-events: auto;
+    z-index: 151; /* Overlays the scene but under overlays */
+    touch-action: none;
+}
+
 .info-panel {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    padding: 12px 20px;
-    border-left: 4px solid var(--canaa-gold);
-    border-radius: 0 4px 4px 0;
-    font-size: 14px;
-    letter-spacing: 2px;
-    text-shadow: 0 0 10px var(--canaa-gold);
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #fff;
+    z-index: 105;
+    pointer-events: none;
+    font-family: var(--font-body);
 }
 
 #status-bars {
-    position: absolute;
-    bottom: 30px;
-    left: 30px;
-    width: 280px;
+    position: fixed;
+    bottom: 25px;
+    left: 25px;
+    width: 240px;
     display: flex;
     flex-direction: column;
     gap: 8px;
+    z-index: 110;
 }
 
 .bar-container {
-    height: 10px;
+    height: 8px;
     background: rgba(255,255,255,0.05);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 2px;
@@ -128,11 +143,12 @@ body {
 #armor-bar { background: var(--canaa-blue); color: var(--canaa-blue); }
 
 .bar-label {
-    font-size: 10px;
+    font-size: 9px;
     font-weight: 700;
     letter-spacing: 1px;
-    color: rgba(255,255,255,0.6);
+    color: #fff;
     margin-bottom: 2px;
+    text-transform: uppercase;
 }
 
 /* --- TACTICAL MISSION CARDS --- */
@@ -360,41 +376,44 @@ body {
     position: absolute;
     background: rgba(255,255,255,0.05);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.3);
     border-radius: 50%;
     color: #fff;
     display: flex;
     justify-content: center;
     align-items: center;
     pointer-events: auto;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
     transition: transform 0.1s;
+    user-select: none;
 }
 
-.action-btn svg { width: 60%; height: 60%; }
+.action-btn svg { width: 50%; height: 50%; opacity: 0.9; }
 
-#fire-btn { width: 110px; height: 110px; right: 40px; bottom: 40px; border: 3px solid var(--canaa-danger); background: rgba(255,0,0,0.1); }
-#aim-btn { width: 70px; height: 70px; right: 160px; bottom: 60px; }
-#jump-btn { width: 70px; height: 70px; right: 60px; bottom: 160px; }
-#swap-btn { width: 50px; height: 50px; right: 250px; bottom: 40px; }
-#grenade-btn { width: 60px; height: 60px; left: 160px; top: 100px; }
-#smoke-btn { width: 60px; height: 60px; left: 230px; top: 100px; }
+#fire-btn { width: 95px; height: 95px; right: 30px; bottom: 30px; border: 3px solid var(--canaa-danger); background: rgba(255,0,0,0.15); z-index: 220; }
+#aim-btn { width: 68px; height: 68px; right: 45px; bottom: 150px; z-index: 215; }
+#jump-btn { width: 68px; height: 68px; right: 155px; bottom: 45px; z-index: 215; }
+#swap-btn { width: 56px; height: 56px; right: 245px; bottom: 45px; }
+#cam-toggle-btn { width: 50px; height: 50px; left: 20px; top: 20px; z-index: 300; background: var(--bg-dark); }
+#grenade-btn { width: 56px; height: 56px; right: 140px; bottom: 140px; }
+#smoke-btn { width: 56px; height: 56px; right: 210px; bottom: 140px; }
 
 #joystick-zone {
     position: absolute;
     left: 40px; bottom: 40px;
-    width: 150px; height: 150px;
+    width: 140px; height: 140px;
     border-radius: 50%;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.1);
     pointer-events: auto;
+    z-index: 210;
 }
 
 #joystick-knob {
     width: 60px; height: 60px;
     background: var(--canaa-gold);
     border-radius: 50%;
-    box-shadow: 0 0 20px var(--canaa-gold);
+    box-shadow: 0 0 25px var(--canaa-gold);
 }
 
 /* --- OVERLAYS (GAME OVER, WIN, ETC) --- */
