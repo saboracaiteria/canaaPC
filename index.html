@@ -11,6 +11,9 @@
     <title>Canaan: Combat Zone</title>
     <link rel="icon" href="data:,">
     
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    
     <style>
         #start-screen-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
@@ -21,9 +24,13 @@
                         linear-gradient(to top, #050505 0%, #050505 30%, transparent 30%) 55vw 100% / 12vw 100% no-repeat, 
                         linear-gradient(to top, #050505 0%, #050505 60%, transparent 60%) 67vw 100% / 15vw 100% no-repeat, 
                         linear-gradient(to top, #050505 0%, #050505 35%, transparent 35%) 82vw 100% / 18vw 100% no-repeat, 
-                        radial-gradient(circle at 50% 60%, rgba(255, 140, 0, 0.4) 0%, transparent 60%), 
-                        linear-gradient(to bottom, #1a0510 0%, #8b1e32 50%, #ff8c00 100%); 
-            z-index: 10000; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; 
+                        linear-gradient(to top, #1a0f14 0%, #1a0f14 35%, transparent 35%) 5vw 100% / 8vw 100% no-repeat, 
+                        linear-gradient(to top, #1a0f14 0%, #1a0f14 55%, transparent 55%) 22vw 100% / 12vw 100% no-repeat, 
+                        linear-gradient(to top, #1a0f14 0%, #1a0f14 45%, transparent 45%) 48vw 100% / 10vw 100% no-repeat, 
+                        linear-gradient(to top, #1a0f14 0%, #1a0f14 65%, transparent 65%) 75vw 100% / 12vw 100% no-repeat, 
+                        radial-gradient(circle at 50% 60%, #ffdf70 0%, #ff8c00 12%, transparent 25%), 
+                        linear-gradient(to bottom, #19052b 0%, #4a1036 25%, #8b1e32 50%, #d84524 75%, #ff8c00 100%); 
+            z-index: 999999; display: flex; flex-direction: column; justify-content: center; align-items: center; cursor: pointer; gap: 50px; 
         }
         .pulse-start { 
             font-family: 'Orbitron', sans-serif; font-size: clamp(40px, 8vw, 80px); font-weight: 900; 
