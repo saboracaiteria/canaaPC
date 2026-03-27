@@ -237,15 +237,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             
             let count = 0;
-            activeIds.forEach(key => {
-                count++; 
-                const div = document.createElement("div"); 
-                div.className = "lobby-player-item"; 
-                if (key === myUserId) div.classList.add("me");
-                let roleTag = (key === activeIds[0]) ? '<span style="color:gold; font-size:10px;"> [HOST]</span>' : '';
-                div.innerHTML = `<span>${key === myUserId ? "VOCÊ" : `Op. ${key.substring(0, 4)}`}${roleTag}</span> <span>ONLINE</span>`; 
-                listEl.appendChild(div);
-            });
+            if (activeIds && Array.isArray(activeIds)) {
+                activeIds.forEach(key => {
+                    count++; 
+                    const div = document.createElement("div"); 
+                    div.className = "lobby-player-item"; 
+                    if (key === myUserId) div.classList.add("me");
+                    let roleTag = (key === activeIds[0]) ? '<span style="color:gold; font-size:10px;"> [HOST]</span>' : '';
+                    div.innerHTML = `<span>${key === myUserId ? "VOCÊ" : `Op. ${key.substring(0, 4)}`}${roleTag}</span> <span>ONLINE</span>`; 
+                    listEl.appendChild(div);
+                });
+            }
             lobbyPlayerCount = count; 
             
             const isHost = (activeIds[0] === myUserId) || (activeIds.length === 1 && activeIds[0] === myUserId);
@@ -2395,6 +2397,7 @@ document.addEventListener('DOMContentLoaded', () => {
             setPitch: (p) => { updateYawPitch(yaw, p); },
             setYaw: (y) => { updateYawPitch(y, pitch); }
         });
+        
         setupUI();
         init();
 
@@ -2410,12 +2413,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     else if (s === 'frozen') { tc = 0x004488; vc = 0x0088ff; sc = 0xccffff; }
                     else if (s === 'gold') { tc = 0x443300; vc = 0xffd700; sc = 0xffeeaa; }
                     
-                    playerMeshParts.torso.material.color.setHex(tc);
-                    playerMeshParts.vest.material.color.setHex(vc);
-                    playerMeshParts.head.material.color.setHex(sc);
-                    playerMeshParts.rForearm.material.color.setHex(sc);
-                    playerMeshParts.lForearm.material.color.setHex(sc);
+                    if (playerMeshParts.torso) playerMeshParts.torso.material.color.setHex(tc);
+                    if (playerMeshParts.vest) playerMeshParts.vest.material.color.setHex(vc);
+                    if (playerMeshParts.head) playerMeshParts.head.material.color.setHex(sc);
                 }
             };
         }
+
+        // AUTO-LOGIN & IDENTITY SYNC
+        import('https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js').then(({ onAuthStateChanged, signInAnonymously }) => {
+            onAuthStateChanged(auth, (user) => { 
+                if (user) { 
+                    setMyUserId(user.uid); 
+                } else {
+                    signInAnonymously(auth).catch(e => console.error("Guest login failed:", e));
+                }
+            });
+        });
     });

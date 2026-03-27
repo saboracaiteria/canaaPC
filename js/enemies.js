@@ -154,15 +154,12 @@ export function spawnEnemies(count, level, { scene, walls, playerGroup, remotePl
             if (isOpen && (rx === 0 || rx === mazeSize-1 || rz === 0 || rz === mazeSize-1)) continue;
             
             let insideWall = false; 
-            for (let w of walls) { 
-                let wdx = 2.8, wdz = 2.8; 
-                if (w.geometry && w.geometry.parameters) { 
-                    wdx = (w.geometry.parameters.width / 2) + 1.2; 
-                    wdz = (w.geometry.parameters.depth / 2) + 1.2; 
-                } 
-                if (Math.abs(px - w.position.x) < wdx && Math.abs(pz - w.position.z) < wdz) { 
-                    insideWall = true; break; 
-                } 
+            if (!isOpen) {
+                // For Mazes, ensure we are not on a 1 in the map
+                if (mazeMap[rz][rx] === 1) insideWall = true;
+            } else {
+                // For Open levels, ensure we are within map bounds
+                if (rx <= 1 || rx >= mazeSize - 2 || rz <= 1 || rz >= mazeSize - 2) insideWall = true;
             }
             
             let tooCloseToPlayer = false; 
