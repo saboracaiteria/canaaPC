@@ -677,13 +677,24 @@ document.addEventListener('DOMContentLoaded', () => {
             triggerShake(currentWeapon === 1 ? 0.3 : 0.08); 
         }
 
-        function checkWall(nx, nz, cx, cz, cy) {
-            const gridX = Math.floor((nx + cellSize / 2) / cellSize);
-            const gridZ = Math.floor((nz + cellSize / 2) / cellSize);
-            
-            if (gridX >= 0 && gridX < mazeSize && gridZ >= 0 && gridZ < mazeSize) {
-                if (mazeMap[gridZ][gridX] === 1) {
-                    if (cy < 5.0) return true; // Most walls are 6m high
+        function checkWall(nx, nz, cx, cz, cy, radius = 0.4) {
+            // Check multiple points around the target position based on radius
+            const points = [
+                { x: nx, z: nz },
+                { x: nx + radius, z: nz },
+                { x: nx - radius, z: nz },
+                { x: nx, z: nz + radius },
+                { x: nx, z: nz - radius }
+            ];
+
+            for (const p of points) {
+                const gridX = Math.floor((p.x + cellSize / 2) / cellSize);
+                const gridZ = Math.floor((p.z + cellSize / 2) / cellSize);
+                
+                if (gridX >= 0 && gridX < mazeSize && gridZ >= 0 && gridZ < mazeSize) {
+                    if (mazeMap[gridZ][gridX] === 1) {
+                        if (cy < 5.0) return true; 
+                    }
                 }
             }
             
@@ -930,7 +941,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                     if (envStaticNodes) {
-                        const wh = bulletRaycaster.intersectObjects(envStaticNodes, false); 
+                        const wh = bulletRaycaster.intersectObjects(envStaticNodes, true); 
                         if (wh.length > 0) { 
                             hit = true; 
                             createImpactEffect(wh[0].point, b.userData.velocity.clone().multiplyScalar(-1).normalize()); 
